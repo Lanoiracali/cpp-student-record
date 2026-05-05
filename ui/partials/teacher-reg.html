@@ -1,0 +1,44 @@
+<section class="space-y-6">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Teacher access</p>
+      <h2 class="mt-2 text-3xl font-bold text-slate-950">Teacher Registration</h2>
+    </div>
+    <button
+      class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-900 hover:text-slate-950"
+      type="button"
+      hx-get="/partials/register"
+      hx-target="#registration-container"
+      hx-swap="innerHTML"
+    >
+      Change role
+    </button>
+  </div>
+
+  <div id="register-message"></div>
+
+  <form class="space-y-4" hx-post="/register" hx-target="#register-message" hx-swap="innerHTML">
+    <input name="role" type="hidden" value="teacher" />
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <label class="space-y-2">
+        <span class="text-sm font-medium text-slate-700">First Name</span>
+        <input class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900" name="first_name" placeholder="Maria" required />
+      </label>
+      <label class="space-y-2">
+        <span class="text-sm font-medium text-slate-700">Last Name</span>
+        <input class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900" name="last_name" placeholder="Santos" required />
+      </label>
+    </div>
+
+    <label class="space-y-2 block">
+      <span class="text-sm font-medium text-slate-700">Password</span>
+      <input class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900" name="password" type="password" required />
+    </label>
+
+    <div class="flex flex-wrap gap-3 pt-2">
+      <button class="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800" type="submit">Create Teacher Account</button>
+      <a class="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-950" href="/login">Back to login</a>
+    </div>
+  </form>
+</section>

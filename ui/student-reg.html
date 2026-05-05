@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Registration - CPP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#00236f",
+                      "on-secondary-container": "#57657a",
+                      "surface": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#1e3a8a",
+                      "on-primary-fixed-variant": "#264191",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#444651",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed": "#89f5e7",
+                      "surface-dim": "#d8dadc",
+                      "surface-variant": "#e0e3e5",
+                      "tertiary-container": "#004942",
+                      "surface-tint": "#4059aa",
+                      "inverse-surface": "#2d3133",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "tertiary": "#00312c",
+                      "on-tertiary-fixed-variant": "#005049",
+                      "on-tertiary-fixed": "#00201d",
+                      "on-tertiary-container": "#4ebdb0",
+                      "secondary-container": "#d5e3fc",
+                      "secondary": "#515f74",
+                      "on-primary-container": "#90a8ff",
+                      "surface-container": "#eceef0",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#dce1ff",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-primary-fixed": "#00164e",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "on-background": "#191c1e",
+                      "outline": "#757682",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "inverse-primary": "#b6c4ff",
+                      "tertiary-fixed-dim": "#6bd8cb",
+                      "surface-container-high": "#e6e8ea",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-surface": "#191c1e",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#c5c5d3",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface-container-low": "#f2f4f6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "margin": "32px",
+                      "xl": "48px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "data-tabular": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "data-tabular": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 1); }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex items-center justify-center p-md">
+<!-- Primary Layout Container -->
+<main class="w-full max-w-[1440px] grid grid-cols-1 lg:grid-cols-12 gap-lg items-center">
+<!-- Left Side: Visual/Context (4 Columns) -->
+<div class="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-lg">
+<div class="relative rounded-xl overflow-hidden shadow-xl aspect-[4/5]">
+<img alt="University Registration" class="object-cover w-full h-full" data-alt="A sophisticated wide shot of a modern university library interior with sleek glass partitions and high ceilings. The atmosphere is filled with natural daylight, casting soft shadows across organized wooden desks and students focused on their digital tablets. The aesthetic is clean and academic, utilizing a color palette of deep navy blues and bright whites to evoke a sense of stability, professional registrar excellence, and advanced educational technology." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4TqS65srta0i-7yUN0thNSxuFh9SmgeW2PwYdk1pbtIoXHDt8546zN1lIao2r8nwBR0X24AefjSrlUseTZkOrHbhbwIu52nxHnE1JzI__MgS84P3b5c7EVLBrOYFZkt9wrPXaqEEhhP9cWihGyRxvOO96RI-6Ox1V5d-91rsx2IAcIWDkZtuMDz6aLEAgWlXux7WggkY151ZbD9bKJ132UMfdFQK25o4Z6za8krx-EP36rUTgiRMHka_wrz7RdW83mV0dcUhQz7bO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-xl">
+<h1 class="font-display-lg text-display-lg text-on-primary mb-md">CPP</h1>
+<p class="font-body-lg text-body-lg text-on-primary/90">The reliable digital anchor for your academic journey. Securely manage your records, track progress, and organize your student life with institutional precision.</p>
+</div>
+</div>
+</div>
+<!-- Right Side: Registration Form (7 Columns) -->
+<div class="lg:col-span-7 flex justify-center">
+<div class="glass-panel rounded-xl shadow-lg p-xl w-full max-w-[560px]">
+<header class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-primary mb-xs">Student Registration</h2>
+<p class="font-body-md text-body-md text-on-secondary-container">Create your student account to access records and enrollment data.</p>
+</header>
+<form class="space-y-md">
+<!-- Row 1: Full Name -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="full_name">Full Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">person</span>
+<input class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="full_name" name="full_name" placeholder="Johnathan Doe" type="text"/>
+</div>
+</div>
+<!-- Row 2: Username & Student Number -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="username">Username</label>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="username" name="username" placeholder="jdoe_academic" type="text"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="student_number">Student Number</label>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-data-tabular text-data-tabular" id="student_number" name="student_number" placeholder="00-0000" type="text"/>
+</div>
+</div>
+<!-- Row 3: Group Details -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="group_info">Group Number and Name</label>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="group_info" name="group_info" placeholder="Group 4: Data Pioneers" type="text"/>
+</div>
+<!-- Row 4: Course and Section -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="course_section">Course and Section</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">school</span>
+<input class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="course_section" name="course_section" placeholder="BSIT 3-5" type="text"/>
+</div>
+</div>
+<!-- Row 5: Password -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="password" name="password" placeholder="••••••••••••" type="password"/>
+</div>
+<p class="text-[10px] text-on-surface-variant font-body-md mt-xs">Must include at least 8 characters with a mix of letters and numbers.</p>
+</div>
+<!-- Actions -->
+<div class="pt-md space-y-md">
+<button class="w-full bg-tertiary-container hover:bg-tertiary text-on-tertiary-container py-3 rounded-lg font-headline-sm text-headline-sm transition-colors shadow-sm active:scale-[0.98]" type="submit">
+                            Create Account
+                        </button>
+<div class="flex items-center justify-between font-body-md text-body-md text-on-secondary-container px-xs">
+<span>Already have an account?</span>
+<a class="text-primary-container font-semibold hover:underline decoration-2 underline-offset-4 transition-all" href="#">Log in here</a>
+</div>
+</div>
+</form>
+<footer class="mt-xl pt-lg border-t border-slate-200">
+<div class="flex items-center gap-md p-md bg-secondary-container/30 rounded-lg">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="font-body-md text-body-md text-on-secondary-fixed-variant leading-relaxed">
+<strong>Note:</strong> Student accounts are limited to <span class="italic">view-only</span> access for academic records and schedules.
+                        </p>
+</div>
+</footer>
+</div>
+</div>
+</main>
+<!-- Background Decoration -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+<div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-secondary-container/20 blur-[120px] rounded-full"></div>
+<div class="absolute top-[60%] -right-[5%] w-[30%] h-[50%] bg-primary-container/10 blur-[100px] rounded-full"></div>
+</div>
+</body></html>

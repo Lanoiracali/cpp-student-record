@@ -1,0 +1,18 @@
+<section class="mx-auto flex min-h-[70vh] max-w-xl items-center">
+  <div class="card w-full space-y-6">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Welcome Back</p>
+      <h2 class="mt-2 text-3xl font-bold text-slate-950">Sign in to CPP</h2>
+      <p class="mt-2 text-slate-600">Access the academic records workspace.</p>
+    </div>
+    <form method="POST" action="/auth/login" class="space-y-4">
+      <input class="input w-full" name="studId" placeholder="Student ID (e.g., 2024-0012)" required />
+      <input class="input w-full" name="password" placeholder="Password" type="password" required />
+      <button class="btn w-full justify-center bg-slate-900 text-white hover:bg-slate-800" type="submit">Sign In</button>
+    </form>
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <a href="/auth/register" class="hover:text-slate-900">Create account</a>
+      <a href="/" class="hover:text-slate-900">Back</a>
+    </div>
+  </div>
+</section>

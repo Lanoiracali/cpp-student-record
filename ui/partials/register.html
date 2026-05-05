@@ -1,0 +1,33 @@
+<section class="space-y-6">
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Portal Registration</p>
+    <h2 class="mt-2 text-3xl font-bold text-slate-950">Choose an account type</h2>
+    <p class="mt-2 text-slate-600">Pick the role you want to register and we will show the matching form.</p>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <button
+      class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-left transition hover:border-slate-900 hover:bg-white"
+      type="button"
+      hx-get="/partials/student-reg"
+      hx-target="#registration-container"
+      hx-swap="innerHTML"
+    >
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Student</p>
+      <h3 class="mt-2 text-xl font-semibold text-slate-950">Student registration</h3>
+      <p class="mt-2 text-sm leading-6 text-slate-600">Use this if you need to capture student ID, year, section, and group details.</p>
+    </button>
+
+    <button
+      class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-left transition hover:border-slate-900 hover:bg-white"
+      type="button"
+      hx-get="/partials/teacher-reg"
+      hx-target="#registration-container"
+      hx-swap="innerHTML"
+    >
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Teacher</p>
+      <h3 class="mt-2 text-xl font-semibold text-slate-950">Teacher registration</h3>
+      <p class="mt-2 text-sm leading-6 text-slate-600">Use this for a minimal teacher account with first name, last name, and password only.</p>
+    </button>
+  </div>
+</section>

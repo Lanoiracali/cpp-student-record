@@ -1,0 +1,39 @@
+<section class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Records</p>
+      <h2 class="mt-2 text-3xl font-bold text-slate-950">Manage Student Records</h2>
+    </div>
+    <div class="flex gap-3">
+      <button class="btn" hx-get="/partials/dashboard" hx-target="#page-body" hx-push-url="true">Dashboard</button>
+      <button class="btn bg-slate-900 text-white hover:bg-slate-800" hx-get="/partials/register" hx-target="#page-body" hx-push-url="true">Add Student</button>
+    </div>
+  </div>
+
+  <div class="card space-y-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <input class="input min-w-72 flex-1" placeholder="Search by name, ID, or email..." />
+      <select class="input"><option>All Sections</option><option>Section A</option><option>Section B</option></select>
+      <select class="input"><option>All Groups</option><option>Undergraduate</option><option>Postgraduate</option></select>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-slate-200">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="px-4 py-3">Student</th>
+            <th class="px-4 py-3">Program</th>
+            <th class="px-4 py-3">Section</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-t border-slate-200"><td class="px-4 py-3 font-medium">Sarah Jenkins</td><td class="px-4 py-3">BSCS</td><td class="px-4 py-3">3-1</td><td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">Verified</span></td><td class="px-4 py-3"><button class="btn">Open</button></td></tr>
+          <tr class="border-t border-slate-200"><td class="px-4 py-3 font-medium">Michael Torres</td><td class="px-4 py-3">BSIT</td><td class="px-4 py-3">3-5</td><td class="px-4 py-3"><span class="rounded-full bg-amber-100 px-2 py-1 text-amber-700">Flagged</span></td><td class="px-4 py-3"><button class="btn">Review</button></td></tr>
+          <tr class="border-t border-slate-200"><td class="px-4 py-3 font-medium">Amira Khaled</td><td class="px-4 py-3">BSA</td><td class="px-4 py-3">1-1</td><td class="px-4 py-3"><span class="rounded-full bg-sky-100 px-2 py-1 text-sky-700">Pending</span></td><td class="px-4 py-3"><button class="btn">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

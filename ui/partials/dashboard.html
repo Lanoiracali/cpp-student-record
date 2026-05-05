@@ -1,0 +1,64 @@
+<section class="space-y-8">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Overview</p>
+      <h2 class="mt-2 text-4xl font-bold text-slate-950">Academic Dashboard</h2>
+      <p class="mt-2 max-w-2xl text-slate-600">Overview of university registrations and record health for the current
+        term.</p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <article class="card">
+      <p class="text-sm font-medium text-slate-500">Total Enrolled</p>
+      <div class="mt-2 text-4xl font-bold text-blue-900">{{TOTAL_ENROLLED}}</div>
+    </article>
+    <article class="card">
+      <p class="text-sm font-medium text-slate-500">Processed Records</p>
+      <div class="mt-2 text-4xl font-bold text-blue-900">{{PROCESSED_RECORDS}}</div>
+    </article>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
+    <section class="card space-y-4">
+      <div class="flex items-center justify-between gap-4">
+        <h3 class="text-xl font-semibold">Recent Activity</h3>
+        <button class="btn" hx-get="/partials/records" hx-target="#page-body" hx-push-url="true">Open Records</button>
+      </div>
+      <div class="space-y-4">
+        <div class="flex items-start gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">2m</div>
+          <div>
+            <p class="font-medium">Sarah Jenkins completed registration for CS101.</p>
+            <p class="text-sm text-slate-500">ID 2024-0012</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div class="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">45m</div>
+          <div>
+            <p class="font-medium">Graduation audit completed for candidate #89221.</p>
+            <p class="text-sm text-slate-500">Office of Records</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div class="rounded-full bg-rose-100 px-3 py-1 text-sm font-semibold text-rose-700">2h</div>
+          <div>
+            <p class="font-medium">Transcript discrepancy flagged for Michael Torres.</p>
+            <p class="text-sm text-slate-500">Needs review</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="space-y-6">
+      <div class="card space-y-3">
+        <h3 class="text-xl font-semibold">Quick Tools</h3>
+        <a class="btn w-full justify-start" href="/register">Teacher Registration</a>
+        <a class="btn w-full justify-start" href="/register">Role Selection</a>
+        <form method="POST" action="/auth/logout">
+          <button class="btn w-full justify-start" type="submit">Sign Out</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</section>

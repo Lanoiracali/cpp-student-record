@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CPP</title>
+  <link rel="stylesheet" href="/src/output.css" />
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="flex min-h-screen">
+    <aside class="fixed inset-y-0 left-0 w-72 border-r border-slate-200 bg-white px-5 py-6">
+      <div class="flex items-center gap-3 pb-8">
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-900 text-white">RP</div>
+        <div>
+          <p class="text-lg font-bold leading-none">Main Office</p>
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Academic Affairs</p>
+        </div>
+      </div>
+
+      <nav class="space-y-2" hx-boost="true">
+        <a class="navlink" hx-get="/partials/dashboard" hx-target="#page-body" hx-push-url="true" href="/dashboard">Dashboard</a>
+        <a class="navlink" hx-get="/partials/records" hx-target="#page-body" hx-push-url="true" href="/records">Records</a>
+        <a class="navlink" hx-get="/partials/students" hx-target="#page-body" hx-push-url="true" href="/students">Students</a>
+      </nav>
+
+      <div class="mt-8 space-y-2 border-t border-slate-200 pt-6">
+        <a class="btn w-full justify-center bg-teal-600 text-white hover:bg-teal-700" hx-get="/partials/records" hx-target="#page-body" hx-push-url="true" href="/records">New Record</a>
+        <form method="POST" action="/auth/logout" class="w-full" onsubmit="return confirm('Are you sure you want to logout?')">
+          <button class="btn w-full justify-center bg-slate-200 text-slate-900 hover:bg-slate-300" type="submit">Logout</button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="ml-72 flex min-h-screen w-full flex-col">
+      <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div class="flex h-16 items-center justify-between px-8">
+          <div>
+            <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">CPP</p>
+            <h1 class="text-lg font-semibold text-slate-900">Student Record Management</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <input class="input w-72" placeholder="Search records, students, files..." />
+            <button class="btn">Help</button>
+          </div>
+        </div>
+      </header>
+
+      <main id="page-body" class="flex-1 p-8" hx-get="/partials/dashboard" hx-trigger="load" hx-swap="innerHTML"></main>
+    </div>
+  </div>
+
+  <style>
+    .navlink { display:block; border-radius:0.75rem; padding:0.75rem 1rem; font-weight:600; color:#334155; transition:background-color .15s ease,color .15s ease; }
+    .navlink:hover { background:#f1f5f9; color:#0f172a; }
+    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:.75rem; border:1px solid #cbd5e1; padding:.6rem .95rem; font-weight:600; background:#fff; }
+    .btn:hover { background:#f8fafc; }
+    .input { border-radius:.75rem; border:1px solid #cbd5e1; padding:.65rem .9rem; background:#fff; }
+  </style>
+</body>
+</html>
