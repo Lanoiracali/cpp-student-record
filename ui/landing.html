@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CPP | Institutional Records Management System</title>
+  <meta name="description" content="Cal Poly Pomona Institutional Records Management System — secure, fast, and reliable academic record keeping for students and teachers." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#00236f",
+            "primary-container": "#1e3a8a",
+            "on-primary": "#ffffff",
+            "secondary": "#515f74",
+            "tertiary": "#00312c",
+            "tertiary-container": "#004942",
+            "on-tertiary-container": "#4ebdb0",
+            "surface": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#444651",
+            "outline": "#757682",
+            "outline-variant": "#c5c5d3",
+            "error": "#ba1a1a",
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f9fb;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Animated gradient hero background */
+    .hero-bg {
+      background: linear-gradient(135deg, #00236f 0%, #1e3a8a 40%, #004942 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 30%, rgba(78, 189, 176, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(176, 196, 255, 0.14) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Subtle grid overlay */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* Role card hover */
+    .role-card {
+      transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease, border-color 0.18s ease;
+    }
+    .role-card:hover {
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 20px 60px -12px rgba(0, 35, 111, 0.22);
+    }
+    .role-card:active {
+      transform: translateY(-2px) scale(1.005);
+    }
+
+    /* Fade-in animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fadeUp 0.6s ease both; }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    .delay-500 { animation-delay: 0.5s; }
+
+    /* Icon pulse */
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Floating badge */
+    .badge-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Nav -->
+  <header class="absolute top-0 left-0 right-0 z-20 px-6 py-5 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-white/15 backdrop-blur flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-lg" style="font-variation-settings: 'FILL' 1;">school</span>
+      </div>
+      <span class="text-white font-bold text-lg tracking-tight">CPP</span>
+    </div>
+    <a href="/login/teacher"
+      class="px-4 py-2 rounded-full border border-white/25 text-white/85 text-sm font-medium hover:bg-white/10 hover:text-white transition-all backdrop-blur">
+      Sign in
+    </a>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-bg min-h-[62vh] flex flex-col items-center justify-center text-center px-6 py-28 relative z-10">
+    <!-- Floating badge -->
+    <div class="badge-float mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/12 border border-white/20 text-white/80 text-xs font-semibold uppercase tracking-widest backdrop-blur animate-fade-up">
+      <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+      Academic Records System
+    </div>
+
+    <h1 class="text-white font-black text-5xl sm:text-6xl lg:text-7xl leading-[1.08] tracking-tight max-w-3xl animate-fade-up delay-100">
+      Welcome to<br />
+      <span class="bg-gradient-to-r from-teal-300 to-blue-200 bg-clip-text text-transparent">CPP Portal</span>
+    </h1>
+
+    <p class="mt-5 text-white/65 text-lg max-w-xl leading-relaxed animate-fade-up delay-200">
+      Institutional Records Management System for Cal Poly Pomona. Secure access for students and teachers.
+    </p>
+
+    <!-- Role Selector Prompt -->
+    <p class="mt-12 text-white/50 text-sm font-semibold uppercase tracking-[0.2em] animate-fade-up delay-300">
+      Choose your role to continue
+    </p>
+
+    <!-- Role Cards -->
+    <div class="mt-5 flex flex-col sm:flex-row gap-4 w-full max-w-lg animate-fade-up delay-400">
+
+      <!-- Student Card -->
+      <a href="/login/student"
+        class="role-card flex-1 bg-white/10 border border-white/20 rounded-2xl p-7 text-left cursor-pointer backdrop-blur hover:bg-white/18 hover:border-white/40 group">
+        <div class="w-11 h-11 rounded-xl bg-blue-400/20 flex items-center justify-center mb-4 group-hover:bg-blue-400/30 transition-colors">
+          <span class="material-symbols-outlined text-blue-200 text-2xl" style="font-variation-settings: 'FILL' 1;">person</span>
+        </div>
+        <h2 class="text-white font-bold text-xl mb-1">Student</h2>
+        <p class="text-white/55 text-sm leading-relaxed">Access your academic records and registration status.</p>
+        <div class="mt-5 flex items-center gap-1.5 text-blue-300 text-sm font-semibold">
+          Continue
+          <span class="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">arrow_forward</span>
+        </div>
+      </a>
+
+      <!-- Teacher Card -->
+      <a href="/login/teacher"
+        class="role-card flex-1 bg-white/10 border border-white/20 rounded-2xl p-7 text-left cursor-pointer backdrop-blur hover:bg-white/18 hover:border-teal-400/50 group">
+        <div class="w-11 h-11 rounded-xl bg-teal-400/20 flex items-center justify-center mb-4 group-hover:bg-teal-400/30 transition-colors">
+          <span class="material-symbols-outlined text-teal-200 text-2xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h2 class="text-white font-bold text-xl mb-1">Teacher</h2>
+        <p class="text-white/55 text-sm leading-relaxed">Manage class sections, records, and student progress.</p>
+        <div class="mt-5 flex items-center gap-1.5 text-teal-300 text-sm font-semibold">
+          Sign In
+          <span class="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">arrow_forward</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Features Strip -->
+  <section class="bg-white border-t border-slate-100 px-6 py-12 animate-fade-up delay-500">
+    <div class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+      <div>
+        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary mx-auto mb-3">
+          <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+        </div>
+        <h3 class="font-bold text-slate-800 text-sm">Secure Access</h3>
+        <p class="text-slate-500 text-xs mt-1 leading-relaxed">Role-based authentication with encrypted sessions.</p>
+      </div>
+      <div>
+        <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 mx-auto mb-3">
+          <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">folder_shared</span>
+        </div>
+        <h3 class="font-bold text-slate-800 text-sm">Centralized Records</h3>
+        <p class="text-slate-500 text-xs mt-1 leading-relaxed">All academic data in one organized platform.</p>
+      </div>
+      <div>
+        <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mx-auto mb-3">
+          <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">analytics</span>
+        </div>
+        <h3 class="font-bold text-slate-800 text-sm">Real-Time Analytics</h3>
+        <p class="text-slate-500 text-xs mt-1 leading-relaxed">Live dashboard stats for teachers and administrators.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-white border-t border-slate-100 px-6 py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <p class="text-slate-400 text-xs">© 2024 CPP Academic Systems. All rights reserved.</p>
+    <div class="flex items-center gap-1.5 text-slate-400 text-xs">
+      <span class="material-symbols-outlined text-sm">lock</span>
+      AES-256 Encrypted Connection
+    </div>
+  </footer>
+
+</body>
+
+</html>

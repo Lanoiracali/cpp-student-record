@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Teacher Account | CPP</title>
+<meta name="description" content="Create a teacher account for the CPP Institutional Records Management System." />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "tertiary": "#00312c",
+          "surface": "#f7f9fb",
+          "on-tertiary-container": "#4ebdb0",
+          "primary-fixed": "#dce1ff",
+          "tertiary-container": "#004942",
+          "error": "#ba1a1a",
+          "primary-container": "#1e3a8a",
+          "on-surface": "#191c1e",
+          "surface-container-lowest": "#ffffff",
+          "on-surface-variant": "#444651",
+          "error-container": "#ffdad6",
+          "primary": "#00236f",
+          "on-error-container": "#93000a",
+          "secondary": "#515f74",
+          "outline": "#757682",
+          "outline-variant": "#c5c5d3",
+          "surface-container": "#eceef0",
+          "surface-container-low": "#f2f4f6",
+          "on-primary": "#ffffff",
+          "on-tertiary": "#ffffff",
+          "on-tertiary-container": "#4ebdb0",
+        },
+        "spacing": {
+          "md": "16px", "gutter": "24px", "lg": "24px",
+          "base": "4px", "margin": "32px", "xl": "48px", "sm": "8px", "xs": "4px"
+        },
+        "fontFamily": {
+          "headline-sm": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"],
+          "headline-md": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"]
+        },
+        "fontSize": {
+          "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+          "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+          "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+          "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block; vertical-align: middle;
+  }
+  .login-sidebar {
+    background: linear-gradient(160deg, #00236f 0%, #1e3a8a 50%, #004942 100%);
+    position: relative; overflow: hidden;
+  }
+  .login-sidebar::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 20% 30%, rgba(78,189,176,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(176,196,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .login-sidebar::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fadeUp 0.5s ease both; }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+
+<!-- Left decorative sidebar -->
+<div class="login-sidebar hidden lg:flex lg:w-[420px] xl:w-[480px] flex-col justify-between p-10 relative z-10 shrink-0">
+  <div>
+    <a href="/login/teacher" class="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-12">
+      <span class="material-symbols-outlined text-sm">arrow_back</span>
+      <span class="text-sm font-medium">Back to login</span>
+    </a>
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings: 'FILL' 1;">school</span>
+      </div>
+      <div>
+        <h2 class="text-white font-black text-xl leading-tight">CPP</h2>
+        <p class="text-white/50 text-xs font-medium uppercase tracking-wider">Academic Affairs</p>
+      </div>
+    </div>
+    <h1 class="text-white font-bold text-3xl leading-snug max-w-xs">Create Your<br/>Teacher Account</h1>
+    <p class="text-white/55 text-sm mt-3 max-w-xs leading-relaxed">
+      Register with your full name and institutional email to start managing your class records.
+    </p>
+  </div>
+
+  <!-- What you get -->
+  <div class="space-y-4">
+    <p class="text-white/40 text-xs font-semibold uppercase tracking-widest mb-2">What you get</p>
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 rounded-lg bg-teal-400/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-teal-300 text-base" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+      </div>
+      <div>
+        <p class="text-white/90 text-sm font-semibold">Teacher Dashboard</p>
+        <p class="text-white/45 text-xs mt-0.5">Analytics, sections, and student overview.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 rounded-lg bg-blue-400/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-blue-300 text-base" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+      </div>
+      <div>
+        <p class="text-white/90 text-sm font-semibold">Record Management</p>
+        <p class="text-white/45 text-xs mt-0.5">Create, edit, and track student records.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-400/20 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-indigo-300 text-base" style="font-variation-settings: 'FILL' 1;">group</span>
+      </div>
+      <div>
+        <p class="text-white/90 text-sm font-semibold">Student Management</p>
+        <p class="text-white/45 text-xs mt-0.5">View and organize all enrolled students.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-white/25 text-xs">© 2024 CPP Academic Systems</p>
+</div>
+
+<!-- Right: Registration Form -->
+<main class="flex-1 flex items-center justify-center px-gutter py-xl">
+  <div class="w-full max-w-[440px] flex flex-col gap-lg">
+
+    <!-- Mobile back link -->
+    <a href="/login/teacher" class="lg:hidden flex items-center gap-1.5 text-secondary hover:text-primary transition-colors text-sm font-medium">
+      <span class="material-symbols-outlined text-base">arrow_back</span>
+      Back to login
+    </a>
+
+    <!-- Mobile logo -->
+    <div class="lg:hidden flex items-center gap-xs">
+      <span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">school</span>
+      <h1 class="font-headline-md text-headline-md text-primary tracking-tight">CPP</h1>
+    </div>
+
+    <!-- Form card -->
+    <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm p-xl flex flex-col gap-lg animate-fade-up">
+      <div class="flex flex-col gap-xs">
+        <h2 class="font-display-lg text-display-lg text-on-surface">Create Account</h2>
+        <p class="font-body-md text-body-md text-secondary">Fill in your details to register as a teacher.</p>
+      </div>
+
+      <div id="register-message"><!-- AUTH_MESSAGE --></div>
+
+      <form class="flex flex-col gap-md"
+            method="POST" action="/register/teacher"
+            hx-post="/register/teacher"
+            hx-target="#register-message"
+            hx-swap="innerHTML">
+        <input name="role" type="hidden" value="teacher"/>
+
+        <!-- Full Name -->
+        <div class="flex flex-col gap-sm">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="full_name">Full Name</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">person</span>
+            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="full_name" name="full_name" placeholder="Maria Santos" type="text" required autocomplete="name"/>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="flex flex-col gap-sm">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="email">Email Address</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">mail</span>
+            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="reg-email" name="email" placeholder="teacher@cpp.edu" type="email" required autocomplete="email"/>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="flex flex-col gap-sm">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="reg-password">Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">lock</span>
+            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="reg-password" name="password" placeholder="Create a password" type="password" required autocomplete="new-password"/>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="flex flex-col gap-sm">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="confirm-password">Confirm Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">lock_reset</span>
+            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="confirm-password" name="password_confirm" placeholder="Repeat your password" type="password" required autocomplete="new-password"/>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button class="w-full h-[48px] bg-primary text-on-primary font-headline-sm text-headline-sm rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-sm mt-sm shadow-sm active:scale-[0.98]"
+                type="submit" id="teacher-register-btn">
+          Create Account
+          <span class="material-symbols-outlined">person_add</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Already have account -->
+    <div class="flex justify-center items-center gap-xl mt-sm">
+      <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="/login/teacher">Already have an account? Sign in</a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

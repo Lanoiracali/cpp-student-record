@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Login | CPP Portal</title>
+<meta name="description" content="Student portal login for CPP Institutional Records Management System."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block; vertical-align: middle;
+  }
+  .hero-bg {
+    background: linear-gradient(160deg, #00236f 0%, #1e3a8a 50%, #004942 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero-bg::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 20% 30%, rgba(78,189,176,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(176,196,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fadeUp 0.45s ease both; }
+
+  /* Step indicator */
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: all .3s ease; }
+  .step-dot.active { background: #4ebdb0; width: 24px; border-radius: 4px; }
+  .step-dot.done { background: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body class="min-h-screen flex bg-slate-50">
+
+<!-- Left sidebar -->
+<div class="hero-bg hidden lg:flex lg:w-[420px] xl:w-[480px] shrink-0 flex-col justify-between p-10 relative z-10">
+  <div>
+    <a href="/" class="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-10 text-sm font-medium">
+      <span class="material-symbols-outlined text-sm">arrow_back</span>Back to home
+    </a>
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings: 'FILL' 1;">person</span>
+      </div>
+      <div>
+        <h2 class="text-white font-black text-xl">CPP</h2>
+        <p class="text-white/50 text-xs font-medium uppercase tracking-wider">Student Portal</p>
+      </div>
+    </div>
+    <h1 class="text-white font-bold text-3xl leading-snug max-w-xs">Access Your<br/>Academic Records</h1>
+    <p class="text-white/55 text-sm mt-3 max-w-xs leading-relaxed">
+      View your grades, quiz scores, and academic performance — all in one place.
+    </p>
+  </div>
+
+  <div class="space-y-4">
+    <p class="text-white/40 text-xs font-semibold uppercase tracking-widest mb-2">How it works</p>
+    <div class="flex items-start gap-3">
+      <div class="w-7 h-7 rounded-full bg-teal-400/25 flex items-center justify-center shrink-0 text-teal-300 text-xs font-black">1</div>
+      <div>
+        <p class="text-white/90 text-sm font-semibold">Enter your PLV email</p>
+        <p class="text-white/45 text-xs mt-0.5">Use your @plv.edu.ph institutional email.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <div class="w-7 h-7 rounded-full bg-teal-400/25 flex items-center justify-center shrink-0 text-teal-300 text-xs font-black">2</div>
+      <div>
+        <p class="text-white/90 text-sm font-semibold">Enter your temporary code</p>
+        <p class="text-white/45 text-xs mt-0.5">Sent to your email by the system.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <div class="w-7 h-7 rounded-full bg-teal-400/25 flex items-center justify-center shrink-0 text-teal-300 text-xs font-black">3</div>
+      <div>
+        <p class="text-white/90 text-sm font-semibold">Create your password</p>
+        <p class="text-white/45 text-xs mt-0.5">Set a permanent password on first login.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-white/25 text-xs">© 2024 CPP Academic Systems</p>
+</div>
+
+<!-- Right: Wizard -->
+<main class="flex-1 flex items-center justify-center px-6 py-12">
+  <div class="w-full max-w-[420px] space-y-6">
+
+    <!-- Mobile back -->
+    <a href="/" class="lg:hidden flex items-center gap-1.5 text-slate-500 hover:text-blue-900 transition-colors text-sm font-medium">
+      <span class="material-symbols-outlined text-base">arrow_back</span>Back
+    </a>
+
+    <!-- Step indicator -->
+    <div class="flex items-center gap-2" id="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+
+    <!-- ── STEP 1: Email ── -->
+    <div id="step-1" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-5 animate-fade-up">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Student Sign In</h2>
+        <p class="text-sm text-slate-500 mt-1">Enter your PLV institutional email to receive your temporary login code.</p>
+      </div>
+      <div id="msg-1" class="hidden"></div>
+      <div class="space-y-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Institutional Email</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">mail</span>
+            <input id="email-input" type="email" placeholder="yourname@plv.edu.ph" autocomplete="email"
+                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+          </div>
+          <p class="text-xs text-slate-400">Must be a @plv.edu.ph address</p>
+        </div>
+        <button id="btn-request" onclick="requestTemp()"
+                class="w-full h-12 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-base">send</span>Send Temporary Code
+        </button>
+      </div>
+      <p class="text-center text-xs text-slate-400">
+        Already activated? <a href="/login/teacher" class="text-blue-700 font-semibold hover:underline">Use email login</a>
+      </p>
+    </div>
+
+    <!-- ── STEP 2: Temp Code ── -->
+    <div id="step-2" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-5 animate-fade-up">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Enter Temporary Code</h2>
+        <p class="text-sm text-slate-500 mt-1">
+          A code was sent to <strong id="display-email" class="text-slate-700"></strong>.
+          Check your inbox and enter the code below.
+        </p>
+      </div>
+      <div id="msg-2" class="hidden"></div>
+      <div class="space-y-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Temporary Code</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">key</span>
+            <input id="temp-input" type="text" placeholder="CPP-XXXXXX" autocomplete="off" spellcheck="false"
+                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 tracking-widest"/>
+          </div>
+        </div>
+        <button id="btn-verify" onclick="verifyTemp()"
+                class="w-full h-12 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-base">verified</span>Verify Code
+        </button>
+        <button onclick="goStep(1)" class="w-full text-xs text-slate-400 hover:text-slate-600 transition-colors">← Use a different email</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Set Password ── -->
+    <div id="step-3" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-5 animate-fade-up">
+      <div>
+        <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined text-teal-600 text-2xl" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900">Create Your Password</h2>
+        <p class="text-sm text-slate-500 mt-1">
+          Welcome, <strong id="display-name" class="text-slate-700"></strong>! Set a permanent password to activate your account.
+        </p>
+      </div>
+      <div id="msg-3" class="hidden"></div>
+      <div class="space-y-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">New Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
+            <input id="pw-input" type="password" placeholder="At least 6 characters"
+                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Confirm Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">lock_reset</span>
+            <input id="pw-confirm" type="password" placeholder="Repeat your password"
+                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+          </div>
+        </div>
+        <button id="btn-setpw" onclick="setPassword()"
+                class="w-full h-12 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-base">check_circle</span>Activate Account
+        </button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  let pendingEmail = '';
+  let pendingName = '';
+
+  function showMsg(step, text, isError) {
+    const el = document.getElementById('msg-' + step);
+    el.className = `text-sm font-medium px-4 py-3 rounded-xl border ${isError
+      ? 'bg-red-50 border-red-200 text-red-700'
+      : 'bg-teal-50 border-teal-200 text-teal-700'}`;
+    el.textContent = text;
+    el.classList.remove('hidden');
+  }
+
+  function clearMsg(step) {
+    document.getElementById('msg-' + step).classList.add('hidden');
+  }
+
+  function goStep(n) {
+    [1, 2, 3].forEach(i => {
+      document.getElementById('step-' + i).classList.toggle('hidden', i !== n);
+      const dot = document.getElementById('dot-' + i);
+      dot.className = 'step-dot' + (i === n ? ' active' : i < n ? ' done' : '');
+    });
+  }
+
+  function setLoading(btnId, loading, label) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading
+      ? '<svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Please wait…'
+      : label;
+  }
+
+  async function requestTemp() {
+    clearMsg(1);
+    const email = document.getElementById('email-input').value.trim();
+    if (!email) { showMsg(1, 'Please enter your email.', true); return; }
+    if (!email.toLowerCase().endsWith('@plv.edu.ph')) {
+      showMsg(1, 'Please use your @plv.edu.ph institutional email.', true); return;
+    }
+    setLoading('btn-request', true, '');
+    try {
+      const res = await fetch('/login/student/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!data.success) { showMsg(1, data.error || 'Request failed.', true); return; }
+      pendingEmail = email;
+      document.getElementById('display-email').textContent = email;
+      goStep(2);
+    } catch(e) {
+      showMsg(1, 'Network error: ' + e.message, true);
+    } finally {
+      setLoading('btn-request', false, '<span class="material-symbols-outlined text-base">send</span>Send Temporary Code');
+    }
+  }
+
+  async function verifyTemp() {
+    clearMsg(2);
+    const code = document.getElementById('temp-input').value.trim().toUpperCase();
+    if (!code) { showMsg(2, 'Please enter the temporary code.', true); return; }
+    setLoading('btn-verify', true, '');
+    try {
+      const res = await fetch('/login/student/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, temp_password: code })
+      });
+      const data = await res.json();
+      if (!data.success) { showMsg(2, data.error || 'Verification failed.', true); return; }
+      pendingName = data.first_name || '';
+      document.getElementById('display-name').textContent = pendingName;
+      goStep(3);
+    } catch(e) {
+      showMsg(2, 'Network error: ' + e.message, true);
+    } finally {
+      setLoading('btn-verify', false, '<span class="material-symbols-outlined text-base">verified</span>Verify Code');
+    }
+  }
+
+  async function setPassword() {
+    clearMsg(3);
+    const pw = document.getElementById('pw-input').value;
+    const conf = document.getElementById('pw-confirm').value;
+    if (!pw || pw.length < 6) { showMsg(3, 'Password must be at least 6 characters.', true); return; }
+    if (pw !== conf) { showMsg(3, 'Passwords do not match.', true); return; }
+    setLoading('btn-setpw', true, '');
+    try {
+      const res = await fetch('/login/student/set-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, new_password: pw })
+      });
+      const data = await res.json();
+      if (!data.success) { showMsg(3, data.error || 'Failed to activate.', true); return; }
+      showMsg(3, 'Account activated! Redirecting…', false);
+      setTimeout(() => { window.location.href = '/student'; }, 1200);
+    } catch(e) {
+      showMsg(3, 'Network error: ' + e.message, true);
+    } finally {
+      setLoading('btn-setpw', false, '<span class="material-symbols-outlined text-base">check_circle</span>Activate Account');
+    }
+  }
+
+  // Enter key support
+  document.getElementById('email-input').addEventListener('keydown', e => e.key === 'Enter' && requestTemp());
+  document.getElementById('temp-input').addEventListener('keydown', e => e.key === 'Enter' && verifyTemp());
+  document.getElementById('pw-confirm').addEventListener('keydown', e => e.key === 'Enter' && setPassword());
+</script>
+</body>
+</html>

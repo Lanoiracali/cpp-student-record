@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Records | CPP Portal</title>
+<meta name="description" content="Student academic records view — CPP Institutional Records System."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #f7f9fb; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block; vertical-align: middle; line-height: 1;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fadeUp 0.4s ease both; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .animate-spin { animation: spin 1s linear infinite; }
+  .print-btn:hover { background: #1e3a8a; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Top navbar -->
+<header class="fixed top-0 left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-sm h-14 flex items-center px-6 gap-4">
+  <div class="flex items-center gap-2.5 flex-1">
+    <div class="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center">
+      <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1">school</span>
+    </div>
+    <span class="font-bold text-slate-900 text-base">CPP Portal</span>
+    <span class="hidden sm:inline text-xs text-slate-400 font-medium">/ Student Records</span>
+  </div>
+
+  <!-- Right: student name + logout -->
+  <div class="flex items-center gap-3">
+    <div class="hidden sm:flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-900 font-black text-sm" id="nav-initials">—</div>
+      <span class="text-sm font-semibold text-slate-700" id="nav-name">Loading…</span>
+    </div>
+    <form action="/logout" method="post">
+      <button type="submit"
+              class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-xl hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all">
+        <span class="material-symbols-outlined text-base">logout</span>
+        <span class="hidden sm:inline">Log out</span>
+      </button>
+    </form>
+  </div>
+</header>
+
+<!-- Main content -->
+<main class="pt-14 min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6" id="card-root">
+
+    <!-- Loading state -->
+    <div class="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3">
+      <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span>
+      <p class="text-sm">Loading your records…</p>
+    </div>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  const STUDENT_ID = {{STUDENT_ID}};
+
+  async function loadCard() {
+    const root = document.getElementById('card-root');
+    try {
+      const res = await fetch('/api/student/me');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to load');
+      renderCard(data.student, data.records || []);
+    } catch(e) {
+      root.innerHTML = `<div class="text-center py-24 text-red-500 space-y-2">
+        <span class="material-symbols-outlined text-5xl block">error</span>
+        <p class="font-semibold">Failed to load records</p>
+        <p class="text-sm">${e.message}</p>
+      </div>`;
+    }
+  }
+
+  function renderCard(s, records) {
+    const initials = (s.first_name?.[0] || '') + (s.surname?.[0] || '');
+    const fullName = `${s.surname}, ${s.first_name}${s.middle_initial ? ' ' + s.middle_initial + '.' : ''}`;
+    const root = document.getElementById('card-root');
+
+    // Update navbar
+    document.getElementById('nav-initials').textContent = initials.toUpperCase();
+    document.getElementById('nav-name').textContent = s.first_name + ' ' + s.surname;
+
+    root.innerHTML = `
+    <div class="animate-fade-up space-y-5">
+
+      <!-- Index Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <!-- Card header -->
+        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-teal-800 p-6 sm:p-7">
+          <div class="flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-4 sm:gap-6 items-start">
+
+            <!-- Left: Avatar -->
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 border-2 border-white/30
+                        flex items-center justify-center text-white font-black text-2xl sm:text-3xl shrink-0 self-center">
+              ${initials.toUpperCase()}
+            </div>
+
+            <!-- Center: Group -->
+            <div class="text-center hidden sm:block pt-2">
+              <p class="text-blue-200 text-xs font-bold uppercase tracking-[0.2em]">Group ${s.group_number}</p>
+              <p class="text-white font-black text-xl leading-tight mt-1">${s.group_name}</p>
+              <p class="text-blue-200 text-sm mt-1">${s.section_name}</p>
+            </div>
+
+            <!-- Right: Identity -->
+            <div class="text-right space-y-1 pt-1">
+              <p class="text-white font-bold text-base sm:text-lg leading-tight">${fullName}</p>
+              <p class="text-blue-200 font-mono text-sm">${s.stud_number}</p>
+              <p class="text-blue-200 text-xs">${s.section_name}</p>
+              <span class="inline-block mt-2 text-xs font-bold text-teal-300 bg-teal-900/40 border border-teal-500/40 px-2.5 py-1 rounded-full">
+                Group ${s.group_number} — ${s.group_name}
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Records table -->
+        <div class="p-5 sm:p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-slate-800 flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-900" style="font-variation-settings:'FILL' 1">assignment</span>
+              Academic Records
+              <span class="text-xs font-normal text-slate-400 ml-1">${records.length} entr${records.length !== 1 ? 'ies' : 'y'}</span>
+            </h2>
+            <button onclick="window.print()"
+                    class="print-btn flex items-center gap-1.5 px-3 py-2 bg-blue-900 text-white text-xs font-bold rounded-xl transition-all">
+              <span class="material-symbols-outlined text-sm">print</span><span class="hidden sm:inline">Print</span>
+            </button>
+          </div>
+
+          ${records.length === 0 ? `
+          <div class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-2">
+            <span class="material-symbols-outlined text-5xl">assignment_late</span>
+            <p class="font-semibold text-slate-500">No records yet</p>
+            <p class="text-sm">Your teacher hasn't added any records for you.</p>
+          </div>` : `
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                  <th class="px-4 py-3 text-left">Date</th>
+                  <th class="px-4 py-3 text-left">Type</th>
+                  <th class="px-4 py-3 text-right">Score</th>
+                  <th class="px-4 py-3 text-right">Total</th>
+                  <th class="px-4 py-3 text-left hidden sm:table-cell">Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${records.map((r, idx) => {
+                  const date = r.date ? r.date.split('T')[0] : '—';
+                  const pct = r.total_score ? Math.round((r.score / r.total_score) * 100) : null;
+                  const scoreColor = pct === null ? 'text-slate-800' :
+                    pct >= 90 ? 'text-teal-700' : pct >= 75 ? 'text-blue-700' : 'text-red-600';
+                  return `<tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} border-t border-slate-100">
+                    <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">${date}</td>
+                    <td class="px-4 py-3.5 font-semibold text-slate-800">${r.type_of_undertaking}</td>
+                    <td class="px-4 py-3.5 text-right">
+                      <span class="font-black ${scoreColor} text-base">${r.score != null ? r.score : '—'}</span>
+                    </td>
+                    <td class="px-4 py-3.5 text-right text-xs text-slate-400">
+                      ${r.total_score != null ? `/ ${r.total_score}` : ''}
+                      ${pct !== null ? `<span class="ml-1 font-semibold ${scoreColor}">(${pct}%)</span>` : ''}
+                    </td>
+                    <td class="px-4 py-3.5 text-xs text-slate-500 hidden sm:table-cell">${r.remarks || '—'}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Summary row -->
+          ${records.length > 0 ? (() => {
+            const scored = records.filter(r => r.score != null && r.total_score != null);
+            if (!scored.length) return '';
+            const avg = (scored.reduce((a, r) => a + (r.score / r.total_score) * 100, 0) / scored.length).toFixed(1);
+            const avgColor = avg >= 90 ? 'text-teal-700 bg-teal-50 border-teal-200' :
+                             avg >= 75 ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                                         'text-red-700 bg-red-50 border-red-200';
+            return `<div class="flex items-center justify-end gap-2 pt-1">
+              <span class="text-xs text-slate-500">Average:</span>
+              <span class="text-sm font-black px-3 py-1 rounded-full border ${avgColor}">${avg}%</span>
+            </div>`;
+          })() : ''}
+          `}
+        </div>
+      </div>
+
+      <!-- Read-only notice -->
+      <div class="flex items-center gap-2.5 text-xs text-slate-400 bg-slate-100 rounded-xl px-4 py-3">
+        <span class="material-symbols-outlined text-sm">info</span>
+        <span>This is a read-only view of your academic records. Contact your teacher for any concerns.</span>
+      </div>
+
+    </div>`;
+  }
+
+  loadCard();
+})();
+</script>
+
+</body>
+</html>
