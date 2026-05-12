@@ -1,3 +1,35 @@
+# Dependencies
 node_modules/
+package-lock.json
+
+# Environment Variables
 .env
+.env.*
+
+# Logs and Debugging
+logs
 *.log
+npm-debug.log*
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+cppstudrecord_db.sqlite
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Temporary / Misc Files
+*.txt
+!requirements.txt
+!CMakeLists.txt
+auth-cookies.txt
+cookies.txt
+htmx-cookies.txt
+logincookies.txt

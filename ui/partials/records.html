@@ -1,108 +1,221 @@
-<section class="space-y-6" id="records-root">
-
-  <!-- Header -->
-  <div class="flex flex-wrap items-end justify-between gap-4">
+<section class="space-y-6" id="records-root" style="height:100%; display:flex; flex-direction:column; position:relative;">
+  <div id="records-content" style="flex:1; overflow-y:auto;">
+    <!-- Header -->
+    <div class="flex flex-wrap items-end justify-between gap-4" style="padding: 1.5rem;">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Records</p>
-      <h2 class="mt-1 text-3xl font-bold text-slate-950">My Sections</h2>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Teacher Portal</p>
+      <h2 class="mt-1 text-3xl font-bold text-slate-900">My Sections</h2>
       <p class="mt-1 text-sm text-slate-500">Manage class sections, groups, and student records.</p>
     </div>
     <button id="btn-add-section"
-            class="flex items-center gap-2 px-4 py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors shadow-sm">
-      <span class="material-symbols-outlined text-base">add</span>
-      Add Section
+            class="flex items-center gap-2 px-5 py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 active:scale-95 transition-all shadow-sm">
+      <span class="material-symbols-outlined text-base">add</span>New Section
     </button>
   </div>
 
-  <!-- Sections list (loaded via JS) -->
-  <div id="sections-list" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-    <div class="col-span-full flex items-center justify-center py-16 text-slate-400">
-      <div class="text-center space-y-2">
-        <span class="material-symbols-outlined text-5xl block" style="font-variation-settings:'FILL' 0">folder_open</span>
-        <p class="text-sm font-medium">Loading sections…</p>
+  <!-- Sections grid -->
+  <div id="sections-list" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-300">
+      <span class="material-symbols-outlined text-6xl mb-3">folder_open</span>
+      <p class="text-sm font-medium text-slate-400">Loading sections…</p>
+    </div>
+    </div>
+  </div>
+
+  <!-- ADD SECTION MODAL -->
+  <div id="modal-add-section" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+    <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:30rem; overflow:hidden; animation:fadeUp 0.25s ease both;">
+      <!-- Header -->
+      <div style="background:linear-gradient(to right,#1e3a8a,#1e40af,#312e81); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div style="width:2.25rem; height:2.25rem; border-radius:0.6rem; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center;">
+            <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem; font-variation-settings:'FILL' 1">class</span>
+          </div>
+          <div>
+            <p style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(191,219,254,0.8); margin:0;">Teacher Portal</p>
+            <h4 style="color:#fff; font-weight:800; font-size:1rem; margin:0;">Add New Section</h4>
+          </div>
+        </div>
+        <button id="btn-modal-close" style="background:rgba(255,255,255,0.15); border:none; border-radius:0.5rem; padding:0.4rem; cursor:pointer; color:#fff; display:flex; align-items:center;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+          <span class="material-symbols-outlined" style="font-size:1.2rem;">close</span>
+        </button>
+      </div>
+
+      <!-- Step 1 -->
+      <div id="modal-step-1" style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Section Name</label><select id="sec-name" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" ><option value="">— Select Section —</option><option value="BSIT 3-1">BSIT 3-1</option><option value="BSIT 3-2">BSIT 3-2</option><option value="BSIT 3-3">BSIT 3-3</option><option value="BSIT 3-4">BSIT 3-4</option><option value="BSIT 3-5">BSIT 3-5</option><option value="BSIT 3-6">BSIT 3-6</option><option value="BSIT 3-7">BSIT 3-7</option></select></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">School Year</label><input id="sec-year" type="text" placeholder="2024-2025" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Semester</label><select id="sec-sem" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" ><option value="">— Select —</option><option value="1st">1st Semester</option><option value="2nd">2nd Semester</option><option value="Summer">Summer</option></select></div>
+        </div>
+        <div id="step1-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
+          <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
+          <span id="step1-error-text"></span>
+        </div>
+        <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+          <button id="btn-modal-close-2" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+          <button id="btn-step1-next" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Next: Import Students →</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="modal-step-2" style="display:none; padding:1.5rem; flex-direction:column; gap:1rem;">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:0.75rem; padding:0.85rem 1rem; font-size:0.75rem; color:#1e40af;">
+          <p style="font-weight:700; margin:0 0 0.25rem;">Required CSV columns:</p>
+          <p style="font-family:monospace; margin:0;">student_number, surname, first_name, middle_initial, email, group_number, group_name</p>
+        </div>
+        <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed #e2e8f0; border-radius:0.85rem; padding:2rem 1rem; cursor:pointer; gap:0.5rem; transition:border-color 0.15s, background 0.15s;"
+               onmouseover="this.style.borderColor='#93c5fd'; this.style.background='#f0f9ff';"
+               onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='transparent';">
+          <span class="material-symbols-outlined" style="font-size:2.5rem; color:#94a3b8;">upload_file</span>
+          <span style="font-size:0.875rem; font-weight:600; color:#475569;">Click to choose CSV file</span>
+          <span id="csv-filename" style="font-size:0.75rem; color:#94a3b8;">No file selected</span>
+          <input id="csv-file" type="file" accept=".csv" style="display:none;"/>
+        </label>
+        <div id="step2-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
+          <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
+          <span id="step2-error-text"></span>
+        </div>
+        <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+          <button id="btn-step2-back" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">← Back</button>
+          <button id="btn-step2-import" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Import &amp; Create</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="modal-step-3" style="display:none; padding:2rem 1.5rem; text-align:center; flex-direction:column; align-items:center; gap:1rem;">
+        <div style="width:5rem; height:5rem; border-radius:9999px; background:#f0fdfa; border:2px solid #99f6e4; display:flex; align-items:center; justify-content:center; margin:0 auto;">
+          <span class="material-symbols-outlined" style="font-size:2.5rem; color:#0f766e; font-variation-settings:'FILL' 1;">check_circle</span>
+        </div>
+        <div>
+          <h4 style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0 0 0.35rem;">Section Created!</h4>
+          <p id="import-summary" style="font-size:0.875rem; color:#64748b; margin:0;"></p>
+        </div>
+        <div id="import-errors" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:0.75rem; padding:0.75rem 1rem; font-size:0.75rem; color:#92400e; text-align:left; max-height:8rem; overflow-y:auto; width:100%;"></div>
+        <button id="btn-step3-done" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" style="flex:unset; width:100%; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35);">Done</button>
+      </div>
+    </div>
+  </div>
+  <!-- ADD GROUP MODAL -->
+  <div id="modal-add-group" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+    <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:30rem; overflow:hidden; animation:fadeUp 0.25s ease both;">
+      <div style="background:linear-gradient(to right,#1e3a8a,#1e40af,#312e81); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div style="width:2.25rem; height:2.25rem; border-radius:0.6rem; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center;">
+            <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem; font-variation-settings:'FILL' 1">group_add</span>
+          </div>
+          <div>
+            <p style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(191,219,254,0.8); margin:0;">Section Management</p>
+            <h4 style="color:#fff; font-weight:800; font-size:1rem; margin:0;">Add New Group</h4>
+          </div>
+        </div>
+        <button id="modal-add-group-close" style="background:rgba(255,255,255,0.15); border:none; border-radius:0.5rem; padding:0.4rem; cursor:pointer; color:#fff; display:flex; align-items:center;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+          <span class="material-symbols-outlined" style="font-size:1.2rem;">close</span>
+        </button>
+      </div>
+
+      <!-- Tab switcher -->
+      <div style="display:flex; border-bottom:1.5px solid #e2e8f0;">
+        <button id="grp-tab-form" onclick="window._grpTab('form')"
+                style="flex:1; padding:0.75rem; font-size:0.8rem; font-weight:700; border:none; background:#fff; color:#1e40af; border-bottom:2.5px solid #1e40af; cursor:pointer; transition:all 0.15s;">
+          Fill Form
+        </button>
+        <button id="grp-tab-csv" onclick="window._grpTab('csv')"
+                style="flex:1; padding:0.75rem; font-size:0.8rem; font-weight:700; border:none; background:#fff; color:#94a3b8; border-bottom:2.5px solid transparent; cursor:pointer; transition:all 0.15s;">
+          Import CSV
+        </button>
+      </div>
+
+      <!-- Form panel -->
+      <div id="grp-panel-form" style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Group Number</label><input id="add-group-num" type="number" placeholder="e.g. 5" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" min="1" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Group Name</label><input id="add-group-name" type="text" placeholder="e.g. Team Alpha" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+        </div>
+        <div id="add-group-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
+          <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
+          <span id="add-group-error-text"></span>
+        </div>
+        <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+          <button onclick="qs('#modal-add-group').style.display='none'" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+          <button id="btn-add-group-submit" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Add Group</button>
+        </div>
+      </div>
+
+      <!-- CSV panel -->
+      <div id="grp-panel-csv" style="display:none; padding:1.5rem; flex-direction:column; gap:1rem;">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:0.75rem; padding:0.85rem 1rem; font-size:0.75rem; color:#1e40af;">
+          <p style="font-weight:700; margin:0 0 0.25rem;">CSV columns (one student per row):</p>
+          <p style="font-family:monospace; margin:0;">student_number, surname, first_name, middle_initial, email, group_number, group_name</p>
+        </div>
+        <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed #e2e8f0; border-radius:0.85rem; padding:1.75rem 1rem; cursor:pointer; gap:0.5rem; transition:border-color 0.15s, background 0.15s;"
+               onmouseover="this.style.borderColor='#93c5fd'; this.style.background='#f0f9ff';"
+               onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='transparent';">
+          <span class="material-symbols-outlined" style="font-size:2.2rem; color:#94a3b8;">upload_file</span>
+          <span style="font-size:0.875rem; font-weight:600; color:#475569;">Click to choose CSV file</span>
+          <span id="grp-csv-filename" style="font-size:0.75rem; color:#94a3b8;">No file selected</span>
+          <input id="grp-csv-file" type="file" accept=".csv" style="display:none;"/>
+        </label>
+        <div id="add-group-csv-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
+          <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
+          <span id="add-group-csv-error-text"></span>
+        </div>
+        <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+          <button onclick="qs('#modal-add-group').style.display='none'" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+          <button id="btn-add-group-csv-submit" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Import &amp; Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ADD MEMBER MODAL -->
+  <div id="modal-add-member" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+    <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:30rem; overflow:hidden; animation:fadeUp 0.25s ease both;">
+      <div style="background:linear-gradient(to right,#1e3a8a,#1e40af,#0f766e); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div style="width:2.25rem; height:2.25rem; border-radius:0.6rem; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center;">
+            <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem; font-variation-settings:'FILL' 1">person_add</span>
+          </div>
+          <div>
+            <p style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(191,219,254,0.8); margin:0;">Group Management</p>
+            <h4 style="color:#fff; font-weight:800; font-size:1rem; margin:0;">Add Member</h4>
+          </div>
+        </div>
+        <button id="modal-add-member-close" style="background:rgba(255,255,255,0.15); border:none; border-radius:0.5rem; padding:0.4rem; cursor:pointer; color:#fff; display:flex; align-items:center;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+          <span class="material-symbols-outlined" style="font-size:1.2rem;">close</span>
+        </button>
+      </div>
+      <div style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Student Number</label><input id="add-mem-num" type="text" placeholder="e.g. 2021-12345" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Full Name</label><input id="add-mem-name" type="text" placeholder="e.g. Juan Dela Cruz" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Email</label><input id="add-mem-email" type="email" placeholder="student@example.com" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+        <div id="add-mem-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
+          <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
+          <span id="add-mem-error-text"></span>
+        </div>
+        <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+          <button id="btn-add-member-cancel" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+          <button id="btn-add-member-submit" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Add Member</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ── ADD SECTION MODAL ── -->
-  <div id="modal-add-section"
-       class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-      <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-slate-900">Add New Section</h3>
-        <button id="btn-modal-close" class="text-slate-400 hover:text-slate-700 transition-colors">
-          <span class="material-symbols-outlined">close</span>
-        </button>
+  <!-- DELETE CONFIRM MODAL -->
+  <div id="modal-delete-confirm" style="display:none; position:fixed; inset:0; z-index:60; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+    <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:22rem; overflow:hidden; animation:fadeUp 0.25s ease both;">
+      <div style="background:linear-gradient(to right,#7f1d1d,#dc2626); height:0.35rem;"></div>
+      <div style="padding:2rem 1.5rem 1.5rem; text-align:center;">
+        <div style="width:4.5rem; height:4.5rem; border-radius:9999px; background:#fef2f2; border:2px solid #fecaca; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
+          <span class="material-symbols-outlined" style="font-size:2.2rem; color:#dc2626; font-variation-settings:'FILL' 1;">delete_forever</span>
+        </div>
+        <h4 id="del-confirm-title" style="font-weight:800; font-size:1.05rem; color:#0f172a; margin:0 0 0.4rem;"></h4>
+        <p id="del-confirm-body" style="font-size:0.8rem; color:#64748b; margin:0; line-height:1.5;"></p>
       </div>
-
-      <!-- Step 1: Section info -->
-      <div id="modal-step-1" class="p-6 space-y-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold uppercase tracking-wider text-slate-500" for="sec-name">Section Name</label>
-          <input id="sec-name" type="text" placeholder="e.g. BSIT 3-5"
-                 class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-500" for="sec-year">School Year</label>
-            <input id="sec-year" type="text" placeholder="2024-2025"
-                   class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-500" for="sec-sem">Semester</label>
-            <select id="sec-sem"
-                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white">
-              <option value="">— Select —</option>
-              <option value="1st">1st Semester</option>
-              <option value="2nd">2nd Semester</option>
-              <option value="Summer">Summer</option>
-            </select>
-          </div>
-        </div>
-        <div id="step1-error" class="hidden text-sm text-red-600 font-medium"></div>
-        <button id="btn-step1-next"
-                class="w-full py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors">
-          Next: Import Students →
-        </button>
-      </div>
-
-      <!-- Step 2: CSV Upload -->
-      <div id="modal-step-2" class="hidden p-6 space-y-4">
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 space-y-1">
-          <p class="font-bold">Required CSV columns:</p>
-          <p class="font-mono">student_number, surname, first_name, middle_initial, email, group_number, group_name</p>
-        </div>
-        <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-8 cursor-pointer hover:border-blue-400 transition-colors gap-2">
-          <span class="material-symbols-outlined text-4xl text-slate-400">upload_file</span>
-          <span class="text-sm font-medium text-slate-600">Click to choose CSV file</span>
-          <span id="csv-filename" class="text-xs text-slate-400">No file selected</span>
-          <input id="csv-file" type="file" accept=".csv" class="hidden"/>
-        </label>
-        <div id="step2-error" class="hidden text-sm text-red-600 font-medium"></div>
-        <div class="flex gap-3">
-          <button id="btn-step2-back"
-                  class="flex-1 py-2.5 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
-            ← Back
-          </button>
-          <button id="btn-step2-import"
-                  class="flex-1 py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors">
-            Import & Create
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 3: Result -->
-      <div id="modal-step-3" class="hidden p-6 space-y-4">
-        <div class="text-center space-y-2 pb-2">
-          <span class="material-symbols-outlined text-5xl text-teal-500" style="font-variation-settings:'FILL' 1">check_circle</span>
-          <h4 class="font-bold text-slate-900">Section Created!</h4>
-          <p id="import-summary" class="text-sm text-slate-500"></p>
-        </div>
-        <div id="import-errors" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1 max-h-32 overflow-y-auto"></div>
-        <button id="btn-step3-done"
-                class="w-full py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors">
-          Done
-        </button>
+      <div style="padding:0 1.5rem 1.5rem; display:flex; gap:0.75rem;">
+        <button id="del-confirm-cancel" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;"
+                onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+        <button id="del-confirm-ok" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#991b1b,#dc2626); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(220,38,38,0.35); transition:opacity 0.15s;"
+                onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Delete</button>
       </div>
     </div>
   </div>
@@ -111,282 +224,600 @@
 
 <script>
 (function() {
-  // ── helpers ──────────────────────────────────────────────────────────────
   function qs(sel, root) { return (root || document).querySelector(sel); }
+  function on(sel, ev, fn) { var el = qs(sel); if (el) el.addEventListener(ev, fn); }
+  var _deleteConfirmCb = null;
 
-  // ── Load sections ────────────────────────────────────────────────────────
+  // Colour palette for section cards
+  const CARD_ACCENTS = [
+    { bg: 'bg-blue-900',   light: 'bg-blue-50',   text: 'text-blue-900',   badge: 'bg-blue-100 text-blue-800'  },
+    { bg: 'bg-teal-700',   light: 'bg-teal-50',    text: 'text-teal-800',   badge: 'bg-teal-100 text-teal-800'  },
+    { bg: 'bg-indigo-800', light: 'bg-indigo-50',  text: 'text-indigo-900', badge: 'bg-indigo-100 text-indigo-800'},
+    { bg: 'bg-violet-800', light: 'bg-violet-50',  text: 'text-violet-900', badge: 'bg-violet-100 text-violet-800'},
+  ];
+
+  // ── Delete confirm modal wiring ──────────────────────────────────────────────
+  on('#del-confirm-cancel', 'click', function() {
+    qs('#modal-delete-confirm').style.display = 'none';
+    _deleteConfirmCb = null;
+  });
+  on('#del-confirm-ok', 'click', async function() {
+    qs('#modal-delete-confirm').style.display = 'none';
+    if (typeof _deleteConfirmCb === 'function') { await _deleteConfirmCb(); _deleteConfirmCb = null; }
+  });
+  on('#modal-delete-confirm', 'click', function(e) {
+    if (e.target === qs('#modal-delete-confirm')) { qs('#modal-delete-confirm').style.display = 'none'; _deleteConfirmCb = null; }
+  });
+
+
+
+
+  // ── Load sections ──────────────────────────────────────────────────────────
   async function loadSections() {
     const list = qs('#sections-list');
     try {
-      const res = await fetch('/api/sections');
+      const res  = await fetch('/api/sections');
       const data = await res.json();
       if (!data.success || !data.sections.length) {
         list.innerHTML = `
-          <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
-            <span class="material-symbols-outlined text-6xl block mb-3" style="font-variation-settings:'FILL' 0">folder_open</span>
-            <p class="font-semibold text-slate-500">No sections yet</p>
-            <p class="text-sm mt-1">Click <strong>Add Section</strong> to get started.</p>
+          <div class="col-span-full flex flex-col items-center justify-center py-24 text-slate-300">
+            <span class="material-symbols-outlined text-7xl mb-4">folder_open</span>
+            <p class="font-semibold text-slate-500 text-lg">No sections yet</p>
+            <p class="text-sm text-slate-400 mt-1">Click <strong class="text-blue-900">New Section</strong> to get started.</p>
           </div>`;
         return;
       }
-      list.innerHTML = data.sections.map(s => `
-        <article class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group"
-                 onclick="window.loadSectionDetail(${s.id}, ${JSON.stringify(s.name).replace(/"/g,"&quot;")})">
-          <div class="flex items-start justify-between gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-900 shrink-0">
-              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">class</span>
+      const BG_COLS = ['linear-gradient(135deg,#1e3a8a,#1e40af)','linear-gradient(135deg,#0f766e,#0d9488)','linear-gradient(135deg,#312e81,#4338ca)','linear-gradient(135deg,#4c1d95,#6d28d9)'];
+      const TXT_COLS = ['#1e3a8a','#0f766e','#312e81','#4c1d95'];
+      list.innerHTML = data.sections.map(function(s, i) {
+        var bg  = BG_COLS[i % BG_COLS.length];
+        var tc  = TXT_COLS[i % TXT_COLS.length];
+        var sn  = s.name.replace(/'/g, "\\'");
+        var groupText = s.group_count + ' group' + (s.group_count !== 1 ? 's' : '');
+        var studentText = s.student_count + ' student' + (s.student_count !== 1 ? 's' : '');
+        var semesterYear = (s.semester || '') + ' ' + (s.school_year || '');
+        return `
+          <article style="background:#fff; border:1px solid #e2e8f0; border-radius:1.25rem; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.06); transition:box-shadow 0.2s, transform 0.2s;" onmouseover="this.style.boxShadow='0 8px 28px rgba(0,0,0,0.12)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)'; this.style.transform='none';">
+            <div style="background:${bg}; padding:1.1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="window.loadSectionDetail(${s.id}, '${sn}')">
+              <div style="display:flex; align-items:center; gap:0.75rem;">
+                <div style="width:2.25rem; height:2.25rem; border-radius:0.6rem; background:rgba(255,255,255,0.18); display:flex; align-items:center; justify-content:center;">
+                  <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem; font-variation-settings:'FILL' 1">class</span>
+                </div>
+                <div>
+                  <p style="color:rgba(255,255,255,0.65); font-size:0.625rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; margin:0;">Section</p>
+                  <p style="color:#fff; font-weight:900; font-size:1rem; margin:0.1rem 0 0;">${s.name}</p>
+                </div>
+              </div>
+              <span style="color:rgba(255,255,255,0.85); font-size:0.72rem; font-weight:600; background:rgba(255,255,255,0.18); padding:0.25rem 0.7rem; border-radius:9999px; white-space:nowrap;">
+                ${semesterYear}
+              </span>
             </div>
-            <span class="text-xs font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full whitespace-nowrap">
-              ${s.semester || ''} ${s.school_year || ''}
-            </span>
-          </div>
-          <h3 class="mt-3 text-lg font-bold text-slate-900 group-hover:text-blue-900 transition-colors">${s.name}</h3>
-          <div class="mt-2 flex items-center gap-4 text-xs text-slate-500">
-            <span class="flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">group</span>${s.group_count} group${s.group_count !== 1 ? 's' : ''}
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">person</span>${s.student_count} student${s.student_count !== 1 ? 's' : ''}
-            </span>
-          </div>
-          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-            <span>View groups →</span>
-          </div>
-        </article>`).join('');
+            <div style="padding:0.9rem 1.25rem; display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:1rem; font-size:0.8rem; color:#64748b; cursor:pointer;" onclick="window.loadSectionDetail(${s.id}, '${sn}')">
+                <span style="display:flex; align-items:center; gap:0.4rem;">
+                  <span class="material-symbols-outlined" style="font-size:1rem; color:${tc}">groups</span>
+                  <span><strong style="color:#1e293b">${s.group_count}</strong> ${s.group_count !== 1 ? 'groups' : 'group'}</span>
+                </span>
+                <span style="display:flex; align-items:center; gap:0.4rem;">
+                  <span class="material-symbols-outlined" style="font-size:1rem; color:${tc}">person</span>
+                  <span><strong style="color:#1e293b">${s.student_count}</strong> ${s.student_count !== 1 ? 'students' : 'student'}</span>
+                </span>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.75rem; font-weight:700; color:${tc}; cursor:pointer;" onclick="window.loadSectionDetail(${s.id}, '${sn}')">View →</span>
+                <button onclick="event.stopPropagation(); window.confirmDeleteSection(${s.id}, '${sn}')" title="Remove section" style="width:1.75rem; height:1.75rem; border-radius:0.5rem; background:#fef2f2; color:#ef4444; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                  <span class="material-symbols-outlined" style="font-size:1rem;">delete</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
     } catch(e) {
-      list.innerHTML = `<div class="col-span-full text-sm text-red-500 p-4">Failed to load sections: ${e.message}</div>`;
+      list.innerHTML = `<div class="col-span-full text-sm text-red-500 p-4 bg-red-50 rounded-xl">Failed to load sections: ${e.message}</div>`;
     }
   }
 
-  // ── Load section detail (groups) ────────────────────────────────────────
+  // ── Section detail: groups list ────────────────────────────────────────────
   window.loadSectionDetail = async function(sectionId, sectionName) {
-    const root = qs('#records-root');
-    root.innerHTML = `<div class="flex items-center justify-center py-20 text-slate-400">
-      <span class="material-symbols-outlined animate-spin text-4xl">progress_activity</span></div>`;
+    // If records-content doesn't exist (student card replaced #page-body), reload records partial first
+    let root = qs('#records-content');
+    if (!root) {
+      const pageBody = document.querySelector('#page-body');
+      if (!pageBody) return;
+      pageBody.innerHTML = '<div class="flex items-center justify-center py-24 text-slate-300"><span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span></div>';
+      
+      const swapHandler = function(e) {
+        if (e.detail.target.id === 'page-body') {
+          document.body.removeEventListener('htmx:afterSwap', swapHandler);
+          setTimeout(() => window.loadSectionDetail(sectionId, sectionName), 50);
+        }
+      };
+      document.body.addEventListener('htmx:afterSwap', swapHandler);
+      htmx.ajax('GET', '/partials/records', { target: '#page-body', swap: 'innerHTML' });
+      return;
+    }
+    root.innerHTML = `<div class="flex items-center justify-center py-24 text-slate-300">
+      <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span></div>`;
     try {
-      const res = await fetch(`/api/sections/${sectionId}`);
+      const res  = await fetch(`/api/sections/${sectionId}`);
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       renderGroups(data.section, data.groups);
     } catch(e) {
-      root.innerHTML = `<div class="text-red-500 p-4">${e.message}</div>`;
+      root.innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded-xl text-sm">${e.message}</div>`;
     }
   };
 
   function renderGroups(section, groups) {
-    const root = qs('#records-root');
+    const root = qs('#records-content');
+    const rows = groups.length === 0
+      ? `<div class="flex flex-col items-center justify-center py-16 text-slate-300">
+           <span class="material-symbols-outlined text-6xl mb-3">group_off</span>
+           <p class="text-slate-400 text-sm">No groups in this section.</p>
+         </div>`
+      : `<div class="overflow-x-auto">
+           <table class="w-full text-sm">
+             <thead>
+               <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                 <th class="px-6 py-3 text-left">Group</th>
+                 <th class="px-6 py-3 text-left">Name</th>
+                 <th class="px-6 py-3 text-center">Members</th>
+                 <th class="px-6 py-3"></th>
+               </tr>
+             </thead>
+             <tbody class="divide-y divide-slate-100">
+               ${groups.map((g, i) => {
+                 const num = g.group_number;
+                 const colors = ['bg-blue-100 text-blue-800','bg-teal-100 text-teal-800','bg-indigo-100 text-indigo-800','bg-violet-100 text-violet-800'];
+                 const c = colors[i % colors.length];
+                 return `<tr class="hover:bg-slate-50 transition-colors group">
+                   <td class="px-6 py-4 cursor-pointer" onclick="window.loadGroupDetail(${g.id}, '${section.name}', ${section.id})">
+                     <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl font-black text-sm ${c}">
+                       ${num}
+                     </span>
+                   </td>
+                   <td class="px-6 py-4 font-semibold text-slate-800 cursor-pointer" onclick="window.loadGroupDetail(${g.id}, '${section.name}', ${section.id})">${g.group_name}</td>
+                   <td class="px-6 py-4 text-center cursor-pointer" onclick="window.loadGroupDetail(${g.id}, '${section.name}', ${section.id})">
+                     <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
+                       <span class="material-symbols-outlined text-sm">person</span>${g.member_count}
+                     </span>
+                   </td>
+                   <td class="px-6 py-4 text-right">
+                     <div class="flex items-center justify-end gap-2">
+                       <span class="text-xs text-blue-700 font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                             onclick="window.loadGroupDetail(${g.id}, '${section.name}', ${section.id})">View →</span>
+                       <button onclick="window.deleteGroup(${g.id}, '${g.group_name}', ${section.id}, '${section.name}')"
+                               class="w-7 h-7 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                               title="Remove group">
+                         <span class="material-symbols-outlined text-sm">delete</span>
+                       </button>
+                     </div>
+                   </td>
+                 </tr>`;
+               }).join('')}
+             </tbody>
+           </table>
+         </div>`;
+
     root.innerHTML = `
       <div class="space-y-6">
-        <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-          <button onclick="window.reloadRecords()" class="hover:text-blue-900 font-medium transition-colors">Records</button>
-          <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <button onclick="window.reloadRecords()" class="text-blue-700 font-semibold hover:underline transition-colors">Records</button>
+          <span class="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
           <span class="font-bold text-slate-900">${section.name}</span>
-          <span class="ml-auto text-xs text-slate-400">${section.semester || ''} ${section.school_year || ''}</span>
+          <span class="ml-auto text-xs text-slate-400 font-medium">${section.semester || ''} ${section.school_year || ''}</span>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <h3 class="font-bold text-slate-800">Groups</h3>
-            <span class="text-xs text-slate-500">${groups.length} group${groups.length !== 1 ? 's' : ''}</span>
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-blue-800 text-base" style="font-variation-settings:'FILL' 1">groups</span>
+              </div>
+              <h3 class="font-bold text-slate-800">Groups</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">${groups.length} group${groups.length !== 1 ? 's' : ''}</span>
+              <button onclick="window.openAddGroupModal(${section.id})"
+                      class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-900 text-white text-xs font-bold rounded-lg hover:bg-blue-800 transition-colors">
+                <span class="material-symbols-outlined text-sm">add</span>Add Group
+              </button>
+            </div>
           </div>
-          ${groups.length === 0 ? `
-            <div class="flex flex-col items-center justify-center py-16 text-slate-400">
-              <span class="material-symbols-outlined text-5xl mb-2">group_off</span>
-              <p class="text-sm">No groups in this section.</p>
-            </div>` : `
-          <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider">
-              <tr>
-                <th class="px-5 py-3 text-left">Group #</th>
-                <th class="px-5 py-3 text-left">Group Name</th>
-                <th class="px-5 py-3 text-left">Members</th>
-                <th class="px-5 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${groups.map(g => `
-              <tr class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
-                  onclick="window.loadGroupDetail(${g.id}, '${section.name}', ${section.id})">
-                <td class="px-5 py-3.5 font-bold text-blue-900">Group ${g.group_number}</td>
-                <td class="px-5 py-3.5 font-medium">${g.group_name}</td>
-                <td class="px-5 py-3.5 text-slate-500">${g.member_count} student${g.member_count !== 1 ? 's' : ''}</td>
-                <td class="px-5 py-3.5 text-right">
-                  <span class="text-xs text-blue-700 font-semibold hover:underline">View →</span>
-                </td>
-              </tr>`).join('')}
-            </tbody>
-          </table>`}
+          ${rows}
         </div>
       </div>`;
   }
 
-  // ── Load group members ───────────────────────────────────────────────────
+  // ── Group detail: members list ─────────────────────────────────────────────
   window.loadGroupDetail = async function(groupId, sectionName, sectionId) {
-    const root = qs('#records-root');
-    root.innerHTML = `<div class="flex items-center justify-center py-20 text-slate-400">
-      <span class="material-symbols-outlined animate-spin text-4xl">progress_activity</span></div>`;
+    // If records-content doesn't exist (student card replaced #page-body), reload records partial first
+    let root = qs('#records-content');
+    if (!root) {
+      const pageBody = document.querySelector('#page-body');
+      if (!pageBody) return;
+      pageBody.innerHTML = '<div class="flex items-center justify-center py-24 text-slate-300"><span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span></div>';
+      
+      const swapHandler = function(e) {
+        if (e.detail.target.id === 'page-body') {
+          document.body.removeEventListener('htmx:afterSwap', swapHandler);
+          setTimeout(() => window.loadGroupDetail(groupId, sectionName, sectionId), 50);
+        }
+      };
+      document.body.addEventListener('htmx:afterSwap', swapHandler);
+      htmx.ajax('GET', '/partials/records', { target: '#page-body', swap: 'innerHTML' });
+      return;
+    }
+    root.innerHTML = `<div class="flex items-center justify-center py-24 text-slate-300">
+      <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span></div>`;
     try {
-      const res = await fetch(`/api/groups/${groupId}`);
+      const res  = await fetch(`/api/groups/${groupId}`);
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      renderMembers(data.group, data.members, sectionId);
+      renderMembers(data.group, data.members, sectionId, sectionName);
     } catch(e) {
-      root.innerHTML = `<div class="text-red-500 p-4">${e.message}</div>`;
+      root.innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded-xl text-sm">${e.message}</div>`;
     }
   };
 
-  function renderMembers(group, members, sectionId) {
-    const root = qs('#records-root');
+  function renderMembers(group, members, sectionId, sectionName) {
+    const root = qs('#records-content');
+    const AVATAR_COLORS = ['bg-blue-600','bg-teal-600','bg-indigo-600','bg-violet-600','bg-rose-600','bg-amber-600'];
+
+    const rows = members.length === 0
+      ? `<div class="flex flex-col items-center justify-center py-16 text-slate-300">
+           <span class="material-symbols-outlined text-6xl mb-3">person_off</span>
+           <p class="text-slate-400 text-sm">No students in this group.</p>
+         </div>`
+      : `<div class="overflow-x-auto">
+           <table class="w-full text-sm">
+             <thead>
+               <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                 <th class="px-6 py-3 text-left">Student</th>
+                 <th class="px-6 py-3 text-left">Student #</th>
+                 <th class="px-6 py-3 text-left">Email</th>
+                 <th class="px-6 py-3 text-center">Status</th>
+                 <th class="px-6 py-3"></th>
+               </tr>
+             </thead>
+             <tbody class="divide-y divide-slate-100">
+               ${members.map((m, i) => {
+                 const initials = (m.first_name[0] || '') + (m.surname[0] || '');
+                 const ac = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                 const activated = !m.is_first_login;
+                 return `<tr class="hover:bg-slate-50 transition-colors group">
+                   <td class="px-6 py-4 cursor-pointer" onclick="window.gotoStudentCard(${m.id})">
+                     <div class="flex items-center gap-3">
+                       <div class="w-9 h-9 rounded-full ${ac} flex items-center justify-center text-white text-xs font-black shrink-0">${initials.toUpperCase()}</div>
+                       <div>
+                         <p class="font-semibold text-slate-900">${m.surname}, ${m.first_name}${m.middle_initial ? ' ' + m.middle_initial + '.' : ''}</p>
+                       </div>
+                     </div>
+                   </td>
+                   <td class="px-6 py-4 font-mono text-xs text-slate-500 cursor-pointer" onclick="window.gotoStudentCard(${m.id})">${m.stud_number}</td>
+                   <td class="px-6 py-4 text-slate-500 text-xs cursor-pointer" onclick="window.gotoStudentCard(${m.id})">${m.email}</td>
+                   <td class="px-6 py-4 text-center cursor-pointer" onclick="window.gotoStudentCard(${m.id})">
+                     ${activated
+                       ? `<span class="inline-flex items-center gap-1 text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-1 rounded-full"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">check_circle</span>Active</span>`
+                       : `<span class="inline-flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full"><span class="material-symbols-outlined text-sm">schedule</span>Pending</span>`}
+                   </td>
+                   <td class="px-6 py-4 text-right">
+                     <div class="flex items-center justify-end gap-2">
+                       <span class="text-xs text-blue-700 font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                             onclick="window.gotoStudentCard(${m.id})">View →</span>
+                       <button onclick="window.deleteStudent(${m.id}, '${m.first_name} ${m.surname}', ${group.id}, '${group.section_name}', ${group.section_id})"
+                               class="w-7 h-7 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                               title="Remove student">
+                         <span class="material-symbols-outlined text-sm">person_remove</span>
+                       </button>
+                     </div>
+                   </td>
+                 </tr>`;
+               }).join('')}
+             </tbody>
+           </table>
+         </div>`;
+
     root.innerHTML = `
       <div class="space-y-6">
-        <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-          <button onclick="window.reloadRecords()" class="hover:text-blue-900 font-medium transition-colors">Records</button>
-          <span class="material-symbols-outlined text-sm">chevron_right</span>
-          <button onclick="window.loadSectionDetail(${sectionId}, '')" class="hover:text-blue-900 font-medium transition-colors">${group.section_name}</button>
-          <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <button onclick="window.reloadRecords()" class="text-blue-700 font-semibold hover:underline">Records</button>
+          <span class="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
+          <button onclick="window.loadSectionDetail(${sectionId}, '')" class="text-blue-700 font-semibold hover:underline">${group.section_name}</button>
+          <span class="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
           <span class="font-bold text-slate-900">Group ${group.group_number} — ${group.group_name}</span>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <h3 class="font-bold text-slate-800">Members</h3>
-            <span class="text-xs text-slate-500">${members.length} student${members.length !== 1 ? 's' : ''}</span>
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-teal-800 text-base" style="font-variation-settings:'FILL' 1">group</span>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800">Group ${group.group_number}</p>
+                <p class="text-xs text-slate-500">${group.group_name}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">${members.length} student${members.length !== 1 ? 's' : ''}</span>
+              <button onclick="window.openAddMemberModal(${group.id}, ${sectionId}, '${sectionName.replace(/'/g, "\\'")}')"
+                      class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-900 text-white text-xs font-bold rounded-lg hover:bg-blue-800 transition-colors">
+                <span class="material-symbols-outlined text-sm">person_add</span>Add Member
+              </button>
+            </div>
           </div>
-          ${members.length === 0 ? `
-            <div class="flex flex-col items-center justify-center py-16 text-slate-400">
-              <span class="material-symbols-outlined text-5xl mb-2">person_off</span>
-              <p class="text-sm">No students in this group.</p>
-            </div>` : `
-          <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider">
-              <tr>
-                <th class="px-5 py-3 text-left">Student #</th>
-                <th class="px-5 py-3 text-left">Name</th>
-                <th class="px-5 py-3 text-left">Email</th>
-                <th class="px-5 py-3 text-left">Temp Password</th>
-                <th class="px-5 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${members.map(m => `
-              <tr class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
-                  onclick="window.loadStudentCard(${m.id})">
-                <td class="px-5 py-3.5 font-mono text-xs text-slate-600">${m.stud_number}</td>
-                <td class="px-5 py-3.5 font-semibold">${m.surname}, ${m.first_name}${m.middle_initial ? ' ' + m.middle_initial + '.' : ''}</td>
-                <td class="px-5 py-3.5 text-slate-500">${m.email}</td>
-                <td class="px-5 py-3.5">
-                  ${m.is_first_login
-                    ? `<span class="font-mono text-xs bg-amber-50 border border-amber-200 text-amber-800 px-2 py-1 rounded-lg">${m.temp_password || '—'}</span>`
-                    : `<span class="text-xs text-teal-600 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span>Set</span>`}
-                </td>
-                <td class="px-5 py-3.5 text-right">
-                  <span class="text-xs text-blue-700 font-semibold hover:underline">View Card →</span>
-                </td>
-              </tr>`).join('')}
-            </tbody>
-          </table>`}
+          ${rows}
         </div>
       </div>`;
   }
 
-  // ── Reload records page ──────────────────────────────────────────────────
-  window.reloadRecords = function() {
-    const root = qs('#records-root');
-    root.innerHTML = '';
-    // Re-fetch the records partial
-    fetch('/partials/records').then(r => r.text()).then(html => {
-      root.outerHTML = html;
-    });
+  // ── Navigate to Student Card ───────────────────────────────────────────────
+  window.gotoStudentCard = function(studentId) {
+    window.__currentStudentId = studentId;
+    htmx.ajax('GET', '/partials/students', {target: '#page-body', swap: 'innerHTML'});
   };
 
-  // ── Modal logic ──────────────────────────────────────────────────────────
-  let createdSectionId = null;
+  // ── Reload ─────────────────────────────────────────────────────────────────
+  window.reloadRecords = function() {
+    htmx.ajax('GET', '/partials/records', { target: '#page-body', swap: 'innerHTML' });
+  };
 
-  qs('#btn-add-section').addEventListener('click', () => {
-    qs('#modal-add-section').classList.remove('hidden');
-    qs('#modal-step-1').classList.remove('hidden');
-    qs('#modal-step-2').classList.add('hidden');
-    qs('#modal-step-3').classList.add('hidden');
-    qs('#step1-error').classList.add('hidden');
-    qs('#sec-name').value = '';
-    qs('#sec-year').value = '';
-    qs('#sec-sem').value = '';
-    createdSectionId = null;
-  });
+  // ── Confirm Delete Modal (generic) ──────────────────────────────────────────
+  var _deleteConfirmCb = null;
+  window._showDeleteConfirm = function(title, body, cb) {
+    _deleteConfirmCb = cb;
+    qs('#del-confirm-title').textContent = title;
+    qs('#del-confirm-body').textContent  = body;
+    qs('#modal-delete-confirm').style.display = 'flex';
+  };
 
-  qs('#btn-modal-close').addEventListener('click', () => qs('#modal-add-section').classList.add('hidden'));
-  qs('#modal-add-section').addEventListener('click', (e) => {
-    if (e.target === qs('#modal-add-section')) qs('#modal-add-section').classList.add('hidden');
-  });
+  // ── Delete Section ─────────────────────────────────────────────────────────
+  window.confirmDeleteSection = function(sectionId, sectionName) {
+    window._showDeleteConfirm(
+      'Remove "' + sectionName + '"?',
+      'This will permanently delete the section, all its groups, and all student accounts within it.',
+      async function() {
+        try {
+          const res = await fetch('/api/sections/' + sectionId, { method: 'DELETE' });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error);
+          window.reloadRecords();
+        } catch(e) { alert('Failed to delete section: ' + e.message); window.reloadRecords(); }
+      }
+    );
+  };
+  window.deleteSection = window.confirmDeleteSection; // backwards compat
 
-  qs('#btn-step1-next').addEventListener('click', async () => {
-    const name = qs('#sec-name').value.trim();
-    const year = qs('#sec-year').value.trim();
-    const sem  = qs('#sec-sem').value.trim();
-    const errEl = qs('#step1-error');
-    if (!name) { errEl.textContent = 'Section name is required.'; errEl.classList.remove('hidden'); return; }
-    errEl.classList.add('hidden');
-    const btn = qs('#btn-step1-next');
-    btn.textContent = 'Creating…'; btn.disabled = true;
+  // ── Delete Group ────────────────────────────────────────────────────────────
+  window.deleteGroup = function(groupId, groupName, sectionId, sectionName) {
+    window._showDeleteConfirm(
+      'Remove group "' + groupName + '"?',
+      'All students in this group will be permanently removed along with their accounts and records.',
+      async function() {
+        try {
+          const res = await fetch('/api/groups/' + groupId, { method: 'DELETE' });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error);
+          window.loadSectionDetail(sectionId, sectionName);
+        } catch(e) { alert('Failed to delete group: ' + e.message); window.loadSectionDetail(sectionId, sectionName); }
+      }
+    );
+  };
+
+  // ── Add Group Modal ───────────────────────────────────────────────────
+  window.openAddGroupModal = function(sectionId) {
+    window.__addGroupSectionId = sectionId;
+    qs('#add-group-num').value = '';
+    qs('#add-group-name').value = '';
+    var ge = qs('#add-group-error'); if(ge) ge.style.display = 'none';
+    window._grpTab('form');
+    qs('#modal-add-group').style.display = 'flex';
+  };
+
+  window._grpTab = function(tab) {
+    var isForm = tab === 'form';
+    qs('#grp-panel-form').style.display = isForm ? 'flex' : 'none';
+    qs('#grp-panel-csv').style.display  = isForm ? 'none' : 'flex';
+    qs('#grp-tab-form').style.color = isForm ? '#1e40af' : '#94a3b8';
+    qs('#grp-tab-form').style.borderBottomColor = isForm ? '#1e40af' : 'transparent';
+    qs('#grp-tab-csv').style.color  = isForm ? '#94a3b8' : '#1e40af';
+    qs('#grp-tab-csv').style.borderBottomColor  = isForm ? 'transparent' : '#1e40af';
+  };
+
+  on('#modal-add-group-close', 'click', function() { qs('#modal-add-group').style.display = 'none'; });
+  on('#modal-add-group', 'click', function(e) { if (e.target === qs('#modal-add-group')) qs('#modal-add-group').style.display = 'none'; });
+
+  on('#btn-add-group-submit', 'click', async function() {
+    const num  = qs('#add-group-num').value.trim();
+    const name = qs('#add-group-name').value.trim();
+    const errEl = qs('#add-group-error');
+    const errTx = qs('#add-group-error-text');
+    if (!num || isNaN(Number(num))) { errTx.textContent = 'Group number is required.'; errEl.style.display = 'flex'; return; }
+    errEl.style.display = 'none';
+    const btn = qs('#btn-add-group-submit');
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Adding\u2026';
     try {
-      const res = await fetch('/api/sections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, school_year: year, semester: sem })
+      const res = await fetch(`/api/sections/${window.__addGroupSectionId}/groups`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ group_number: Number(num), group_name: name || ('Group ' + num) })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      createdSectionId = data.section.id;
-      qs('#modal-step-1').classList.add('hidden');
-      qs('#modal-step-2').classList.remove('hidden');
-    } catch(e) {
-      errEl.textContent = e.message; errEl.classList.remove('hidden');
-    } finally {
-      btn.textContent = 'Next: Import Students →'; btn.disabled = false;
-    }
+      qs('#modal-add-group').style.display = 'none';
+      window.loadSectionDetail(window.__addGroupSectionId, '');
+    } catch(e) { errTx.textContent = e.message; errEl.style.display = 'flex'; }
+    finally { btn.disabled = false; btn.textContent = orig; }
   });
 
-  qs('#csv-file').addEventListener('change', (e) => {
-    qs('#csv-filename').textContent = e.target.files[0]?.name || 'No file selected';
+  // Group CSV import
+  on('#grp-csv-file', 'change', function(e) {
+    qs('#grp-csv-filename').textContent = (e.target.files[0] && e.target.files[0].name) || 'No file selected';
   });
-
-  qs('#btn-step2-back').addEventListener('click', () => {
-    qs('#modal-step-2').classList.add('hidden');
-    qs('#modal-step-1').classList.remove('hidden');
-  });
-
-  qs('#btn-step2-import').addEventListener('click', async () => {
-    const file = qs('#csv-file').files[0];
-    const errEl = qs('#step2-error');
-    if (!file) { errEl.textContent = 'Please select a CSV file.'; errEl.classList.remove('hidden'); return; }
-    errEl.classList.add('hidden');
-    const btn = qs('#btn-step2-import');
-    btn.textContent = 'Importing…'; btn.disabled = true;
+  on('#btn-add-group-csv-submit', 'click', async function() {
+    const file  = qs('#grp-csv-file').files[0];
+    const errEl = qs('#add-group-csv-error');
+    const errTx = qs('#add-group-csv-error-text');
+    if (!file) { errTx.textContent = 'Please select a CSV file.'; errEl.style.display = 'flex'; return; }
+    errEl.style.display = 'none';
+    const btn = qs('#btn-add-group-csv-submit');
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Importing\u2026';
     try {
-      const form = new FormData();
-      form.append('file', file);
-      const res = await fetch(`/api/sections/${createdSectionId}/import`, { method: 'POST', body: form });
+      const form = new FormData(); form.append('file', file);
+      const res  = await fetch(`/api/sections/${window.__addGroupSectionId}/import`, { method: 'POST', body: form });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      qs('#import-summary').textContent = `${data.imported_count} student${data.imported_count !== 1 ? 's' : ''} imported into ${data.group_count} group${data.group_count !== 1 ? 's' : ''}.`;
-      if (data.errors && data.errors.length) {
-        const errBox = qs('#import-errors');
-        errBox.innerHTML = '<p class="font-bold mb-1">Skipped rows:</p>' + data.errors.map(e => `<p>• ${e}</p>`).join('');
-        errBox.classList.remove('hidden');
+      qs('#modal-add-group').style.display = 'none';
+      window.loadSectionDetail(window.__addGroupSectionId, '');
+    } catch(e) { errTx.textContent = e.message; errEl.style.display = 'flex'; }
+    finally { btn.disabled = false; btn.textContent = orig; }
+  });
+
+  // ── Delete Student ───────────────────────────────────────────────────────
+  window.deleteStudent = function(studentId, studentName, groupId, sectionName, sectionId) {
+    window._showDeleteConfirm(
+      'Remove "' + studentName + '"?',
+      'This student\'s account and all their academic records will be permanently deleted.',
+      async function() {
+        try {
+          const res = await fetch('/api/students/' + studentId, { method: 'DELETE' });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error);
+          window.loadGroupDetail(groupId, sectionName, sectionId);
+        } catch(e) { alert('Failed to remove student: ' + e.message); }
       }
-      qs('#modal-step-2').classList.add('hidden');
-      qs('#modal-step-3').classList.remove('hidden');
-    } catch(e) {
-      errEl.textContent = e.message; errEl.classList.remove('hidden');
-    } finally {
-      btn.textContent = 'Import & Create'; btn.disabled = false;
+    );
+  };
+
+  // ── Add Member Modal ──────────────────────────────────────────────────
+  window.openAddMemberModal = function(groupId, sectionId, sectionName) {
+    window.__addMemberGroupId    = groupId;
+    window.__addMemberSectionId  = sectionId;
+    window.__addMemberSectionName = sectionName;
+    ['#add-mem-num','#add-mem-name','#add-mem-email'].forEach(function(s) {
+      var el = qs(s); if(el) el.value = '';
+    });
+    var errEl = qs('#add-mem-error');
+    if (errEl) errEl.style.display = 'none';
+    qs('#modal-add-member').style.display = 'flex';
+  };
+
+  on('#modal-add-member-close', 'click', function() { qs('#modal-add-member').style.display = 'none'; });
+  on('#btn-add-member-cancel', 'click', function() { qs('#modal-add-member').style.display = 'none'; });
+  on('#modal-add-member', 'click', function(e) {
+    if (e.target === qs('#modal-add-member')) qs('#modal-add-member').style.display = 'none';
+  });
+
+  on('#btn-add-member-submit', 'click', async function() {
+    const num   = qs('#add-mem-num').value.trim();
+    const full  = qs('#add-mem-name').value.trim();
+    const email = qs('#add-mem-email').value.trim();
+    const errEl = qs('#add-mem-error');
+    const errTx = qs('#add-mem-error-text');
+    if (!num || !full || !email) {
+      errTx.textContent = 'Student #, Full Name and Email are required.';
+      errEl.style.display = 'flex'; return;
     }
+    // Parse "Firstname [Middlename] Surname" -> last word = surname
+    var parts = full.trim().split(/\s+/);
+    var surname = parts.pop();
+    var mi = parts.length > 1 ? parts.pop() : '';
+    var first_name = parts.length ? parts.join(' ') : surname;
+    errEl.style.display = 'none';
+    const btn = qs('#btn-add-member-submit');
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Adding\u2026';
+    try {
+      const res = await fetch('/api/groups/' + window.__addMemberGroupId + '/students', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ student_number: num, surname: surname, first_name: first_name, middle_initial: mi, email: email })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      qs('#modal-add-member').style.display = 'none';
+      window.loadGroupDetail(window.__addMemberGroupId, window.__addMemberSectionName, window.__addMemberSectionId);
+    } catch(e) { errTx.textContent = e.message; errEl.style.display = 'flex'; }
+    finally { btn.disabled = false; btn.textContent = orig; }
   });
 
-  qs('#btn-step3-done').addEventListener('click', () => {
-    qs('#modal-add-section').classList.add('hidden');
-    loadSections();
+  // ── Add Section Modal ──────────────────────────────────────────────────────
+  function showStep(n) {
+    [1,2,3].forEach(function(i) {
+      var el = qs('#modal-step-' + i);
+      if (el) el.style.display = (i === n) ? 'flex' : 'none';
+    });
+  }
+
+  let createdSectionId = null;
+
+  on('#btn-add-section', 'click', function() {
+    qs('#modal-add-section').style.display = 'flex';
+    showStep(1);
+    qs('#step1-error').style.display = 'none';
+    qs('#sec-name').value = qs('#sec-year').value = qs('#sec-sem').value = '';
+    createdSectionId = null;
   });
 
-  // ── Init ─────────────────────────────────────────────────────────────────
+  ['#btn-modal-close','#btn-modal-close-2'].forEach(function(id) {
+    on(id, 'click', function() { qs('#modal-add-section').style.display = 'none'; });
+  });
+  on('#modal-add-section', 'click', function(e) {
+    if (e.target === qs('#modal-add-section')) qs('#modal-add-section').style.display = 'none';
+  });
+
+  on('#btn-step1-next', 'click', function() {
+    var name = qs('#sec-name').value.trim();
+    var errEl = qs('#step1-error');
+    var errTx = qs('#step1-error-text');
+    if (!name) { errTx.textContent = 'Section name is required.'; errEl.style.display = 'flex'; return; }
+    errEl.style.display = 'none';
+    // Just advance — section is created together with the CSV import
+    showStep(2);
+  });
+
+  on('#csv-file', 'change', function(e) {
+    qs('#csv-filename').textContent = (e.target.files[0] && e.target.files[0].name) || 'No file selected';
+  });
+  on('#btn-step2-back', 'click', function() { showStep(1); });
+
+  on('#btn-step2-import', 'click', async function() {
+    const file  = qs('#csv-file').files[0];
+    const errEl = qs('#step2-error');
+    const errTx = qs('#step2-error-text');
+    if (!file) { errTx.textContent = 'Please select a CSV file.'; errEl.style.display = 'flex'; return; }
+    errEl.style.display = 'none';
+    const btn = qs('#btn-step2-import');
+    const orig = btn.textContent;
+    btn.textContent = 'Creating section\u2026'; btn.disabled = true;
+    try {
+      // Step 1: create the section
+      const name = qs('#sec-name').value.trim();
+      const year = qs('#sec-year').value.trim();
+      const sem  = qs('#sec-sem').value.trim();
+      const secRes  = await fetch('/api/sections', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, school_year: year, semester: sem }) });
+      const secData = await secRes.json();
+      if (!secData.success) throw new Error(secData.error);
+      createdSectionId = secData.section.id;
+      // Step 2: import CSV
+      btn.textContent = 'Importing\u2026';
+      const form = new FormData(); form.append('file', file);
+      const res  = await fetch('/api/sections/' + createdSectionId + '/import', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      qs('#import-summary').textContent = data.imported_count + ' student' + (data.imported_count !== 1 ? 's' : '') + ' imported into ' + data.group_count + ' group' + (data.group_count !== 1 ? 's' : '') + '.';
+      if (data.errors && data.errors.length) {
+        const eb = qs('#import-errors');
+        eb.innerHTML = '<p style="font-weight:700;margin:0 0 0.25rem;">Skipped rows:</p>' + data.errors.map(function(e) { return '<p style="margin:0.1rem 0">\u2022 ' + e + '</p>'; }).join('');
+        eb.style.display = 'block';
+      }
+      showStep(3);
+    } catch(e) { errTx.textContent = e.message; errEl.style.display = 'flex'; }
+    finally { btn.textContent = orig; btn.disabled = false; }
+  });
+
+  on('#btn-step3-done', 'click', function() { qs('#modal-add-section').style.display = 'none'; loadSections(); });
+
   loadSections();
 })();
 </script>

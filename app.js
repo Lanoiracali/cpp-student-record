@@ -1,11 +1,55 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const session = require('express-session');
 const { URL } = require('url');
 const { getUserByStudId, verifyPassword, getAllStudents, getStudentRecords } = require('./src/db');
+
+// ── Rate limiting store (in-memory, per IP) ───────────────────────────────────
+const loginAttempts = new Map(); // ip -> { count, lockedUntil }
+const RATE_LIMIT_MAX    = 5;               // max failed attempts
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minute lockout
+
+function getRateLimit(ip) {
+  return loginAttempts.get(ip) || { count: 0, lockedUntil: null };
+}
+
+function recordFailedAttempt(ip) {
+  const entry = getRateLimit(ip);
+  entry.count += 1;
+  if (entry.count >= RATE_LIMIT_MAX) {
+    entry.lockedUntil = Date.now() + RATE_LIMIT_WINDOW;
+  }
+  loginAttempts.set(ip, entry);
+}
+
+function clearRateLimit(ip) {
+  loginAttempts.delete(ip);
+}
+
+function isRateLimited(ip) {
+  const entry = getRateLimit(ip);
+  if (!entry.lockedUntil) return false;
+  if (Date.now() > entry.lockedUntil) { clearRateLimit(ip); return false; }
+  return true;
+}
+
+function getRateLimitMinutes(ip) {
+  const entry = getRateLimit(ip);
+  if (!entry.lockedUntil) return 0;
+  return Math.ceil((entry.lockedUntil - Date.now()) / 60000);
+}
+
+// ── Session token store (token -> sessionId) ──────────────────────────────────
+// Maps a secure random token stored in the session to the session itself.
+// This is a lightweight CSRF / session-fixation defense.
+function generateSessionToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
 
 const app = express();
 const rootDir = __dirname;
@@ -157,7 +201,13 @@ const routes = new Map([
 
 // Middleware to check authentication
 async function requireAuth(req, res, next) {
-  if (req.session.userId) {
+  if (req.session.userId && req.session.sessionToken) {
+    return next();
+  }
+
+  // Legacy sessions without a token (e.g. server restart) — re-authenticate
+  if (req.session.userId && !req.session.sessionToken) {
+    req.session.sessionToken = generateSessionToken();
     return next();
   }
 
@@ -179,6 +229,7 @@ async function requireAuth(req, res, next) {
       if (backendResult.statusCode === 200 && backendResult.body && backendResult.body.success) {
         const user = backendResult.body.user;
         req.session.userId = user.id;
+        req.session.sessionToken = generateSessionToken();
         req.session.user = {
           id: user.id,
           studId: user.studId || user.stud_id,
@@ -244,6 +295,15 @@ function renderShell(initialView = 'dashboard') {
 // ============= AUTH ROUTES =============
 
 async function handleTeacherLogin(req, res) {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+
+  // ── Rate limit check ───────────────────────────────────────────────────────
+  if (isRateLimited(ip)) {
+    const mins = getRateLimitMinutes(ip);
+    const msg = `Too many failed attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''} before trying again.`;
+    return sendFormError(req, res, '/login/teacher', msg);
+  }
+
   try {
     const { email, password } = req.body;
 
@@ -260,16 +320,26 @@ async function handleTeacherLogin(req, res) {
     const backendResult = await postJson(`${flaskBackendBaseUrl}/api/v2/login`, loginPayload);
 
     if (backendResult.statusCode < 200 || backendResult.statusCode >= 300 || !backendResult.body || backendResult.body.success !== true) {
+      // Record failed attempt
+      recordFailedAttempt(ip);
+      const remaining = RATE_LIMIT_MAX - getRateLimit(ip).count;
       const errorMessage = backendResult.body && typeof backendResult.body === 'object'
         ? backendResult.body.error || backendResult.body.message || 'Invalid credentials'
         : 'Login failed';
-      return sendFormError(req, res, '/login/teacher', errorMessage);
+      const lockMsg = getRateLimit(ip).lockedUntil
+        ? ` Account temporarily locked for ${getRateLimitMinutes(ip)} minutes.`
+        : (remaining > 0 ? ` ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.` : '');
+      return sendFormError(req, res, '/login/teacher', errorMessage + lockMsg);
     }
+
+    // Successful login — clear rate limit
+    clearRateLimit(ip);
 
     const user = backendResult.body.user;
 
-    // Store user in session
+    // Store user in session with a secure token
     req.session.userId = user.id;
+    req.session.sessionToken = generateSessionToken();
     req.session.user = {
       id: user.id,
       studId: user.studId || user.stud_id,
@@ -539,7 +609,52 @@ app.post('/login/student/set-password', async (req, res) => {
   }
 });
 
-// POST /logout — generic logout
+// GET /login/student/email — Student email+password login page (already-activated accounts)
+app.get('/login/student/email', (req, res) => {
+  if (req.session.userId && req.session.studentId) return res.redirect('/student');
+  if (req.session.userId) return res.redirect('/dashboard');
+  res.sendFile(path.join(uiDir, 'student-email-login.html'));
+});
+
+// POST /login/student/email — Handle student email+password authentication
+app.post('/login/student/email', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+
+    const result = await flaskRequest('POST', '/api/v1/student/login', { email, password });
+
+    if (!result.body || !result.body.success) {
+      return res.status(result.status || 401).json({
+        success: false,
+        error: (result.body && result.body.error) || 'Invalid email or password',
+      });
+    }
+
+    const student = result.body.student;
+    req.session.userId    = student.user_id;
+    req.session.studentId = student.id;
+    req.session.user = {
+      id:         student.user_id,
+      studentId:  student.id,
+      email:      student.email,
+      fullName:   `${student.first_name} ${student.surname}`,
+      firstName:  student.first_name,
+      lastName:   student.surname,
+      isTeacher:  false,
+      isStudent:  true,
+    };
+
+    return res.json({ success: true });
+  } catch (e) {
+    console.error('Student email login error:', e);
+    return res.status(500).json({ success: false, error: 'Login failed. Please try again.' });
+  }
+});
+
+
 app.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/'));
 });
@@ -627,6 +742,20 @@ app.get('/students', requireAuth, (req, res) => {
 // GET /partials/:view - Get fragment content (requires auth)
 app.get('/partials/:view', async (req, res) => {
   const view = req.params.view;
+
+  // If this is a direct browser navigation (not an HTMX request), redirect to the shell
+  const isHtmx = req.get('HX-Request') === 'true';
+  if (!isHtmx) {
+    // Map partial view to its shell route
+    const shellRoutes = {
+      dashboard: '/dashboard',
+      records:   '/records',
+      students:  '/records',
+    };
+    const shellPath = shellRoutes[view] || '/dashboard';
+    return res.redirect(shellPath);
+  }
+
   const fileName = routes.get(view) || 'dashboard';
   const filePath = path.join(uiDir, 'partials', `${fileName}.html`);
 
@@ -777,6 +906,16 @@ app.get('/api/sections/:id', requireAuth, async (req, res) => {
   }
 });
 
+// DELETE /api/sections/:id  — delete a section
+app.delete('/api/sections/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await flaskRequest('DELETE', `/api/v1/sections/${req.params.id}`);
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 // POST /api/sections/:id/import  — CSV import (multipart)
 app.post('/api/sections/:id/import', requireAuth, upload.single('file'), async (req, res) => {
   try {
@@ -811,6 +950,46 @@ app.post('/api/sections/:id/import', requireAuth, upload.single('file'), async (
 app.get('/api/groups/:id', requireAuth, async (req, res) => {
   try {
     const result = await flaskGet(`/api/v1/groups/${req.params.id}`);
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/sections/:id/groups  — create a new group
+app.post('/api/sections/:id/groups', requireAuth, async (req, res) => {
+  try {
+    const result = await flaskRequest('POST', `/api/v1/sections/${req.params.id}/groups`, req.body);
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// DELETE /api/groups/:id  — delete a group and its members
+app.delete('/api/groups/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await flaskRequest('DELETE', `/api/v1/groups/${req.params.id}`);
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/groups/:id/students  — add a single student to a group
+app.post('/api/groups/:id/students', requireAuth, async (req, res) => {
+  try {
+    const result = await flaskRequest('POST', `/api/v1/groups/${req.params.id}/students`, req.body);
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// DELETE /api/students/:id  — remove a student from the system
+app.delete('/api/students/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await flaskRequest('DELETE', `/api/v1/students/${req.params.id}`);
     res.status(result.status).json(result.body);
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });

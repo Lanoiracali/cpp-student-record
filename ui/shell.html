@@ -1,30 +1,46 @@
-  <!doctype html>
+<!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CPP — Student Records</title>
   <link rel="stylesheet" href="/src/output.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block; vertical-align: middle; line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .animate-spin { animation: spin 1s linear infinite; }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
   </style>
 </head>
+
 <body class="min-h-screen bg-slate-50 text-slate-900">
   <div class="flex min-h-screen">
     <aside class="fixed inset-y-0 left-0 w-72 border-r border-slate-200 bg-white px-5 py-6">
       <div class="flex items-center gap-3 pb-8">
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-900 text-white">RP</div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-900 text-white">CPP</div>
         <div>
           <p class="text-lg font-bold leading-none">Main Office</p>
           <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Academic Affairs</p>
@@ -32,15 +48,16 @@
       </div>
 
       <nav class="space-y-2" hx-boost="true">
-        <a class="navlink" hx-get="/partials/dashboard" hx-target="#page-body" hx-push-url="true" href="/dashboard">Dashboard</a>
-        <a class="navlink" hx-get="/partials/records" hx-target="#page-body" hx-push-url="true" href="/records">Records</a>
-        <a class="navlink" hx-get="/partials/students" hx-target="#page-body" hx-push-url="true" href="/students">Students</a>
+        <a class="navlink" hx-get="/partials/dashboard" hx-target="#page-body" hx-push-url="true"
+          href="/dashboard">Dashboard</a>
+        <a class="navlink" hx-get="/partials/records" hx-target="#page-body" hx-push-url="true"
+          href="/records">Records</a>
       </nav>
 
       <div class="mt-8 space-y-2 border-t border-slate-200 pt-6">
-        <a class="btn w-full justify-center bg-teal-600 text-white hover:bg-teal-700" hx-get="/partials/records" hx-target="#page-body" hx-push-url="true" href="/records">New Record</a>
-        <form method="POST" action="/auth/logout" class="w-full" onsubmit="return confirm('Are you sure you want to logout?')">
-          <button class="btn w-full justify-center bg-slate-200 text-slate-900 hover:bg-slate-300" type="submit">Logout</button>
+        <form method="POST" action="/auth/logout" class="w-full" id="global-logout-form">
+          <button id="sidebar-logout" type="button"
+            class="btn w-full justify-center bg-slate-200 text-slate-900 hover:bg-slate-300">Logout</button>
         </form>
       </div>
     </aside>
@@ -52,10 +69,6 @@
             <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">CPP</p>
             <h1 class="text-lg font-semibold text-slate-900">Student Record Management</h1>
           </div>
-          <div class="flex items-center gap-3">
-            <input class="input w-72" placeholder="Search records, students, files..." />
-            <button class="btn">Help</button>
-          </div>
         </div>
       </header>
 
@@ -64,11 +77,98 @@
   </div>
 
   <style>
-    .navlink { display:block; border-radius:0.75rem; padding:0.75rem 1rem; font-weight:600; color:#334155; transition:background-color .15s ease,color .15s ease; }
-    .navlink:hover { background:#f1f5f9; color:#0f172a; }
-    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:.75rem; border:1px solid #cbd5e1; padding:.6rem .95rem; font-weight:600; background:#fff; }
-    .btn:hover { background:#f8fafc; }
-    .input { border-radius:.75rem; border:1px solid #cbd5e1; padding:.65rem .9rem; background:#fff; }
+    .navlink {
+      display: block;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: #334155;
+      transition: background-color .15s ease, color .15s ease;
+    }
+
+    .navlink:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      border-radius: .75rem;
+      border: 1px solid #cbd5e1;
+      padding: .6rem .95rem;
+      font-weight: 600;
+      background: #fff;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+    }
+
+    .input {
+      border-radius: .75rem;
+      border: 1px solid #cbd5e1;
+      padding: .65rem .9rem;
+      background: #fff;
+    }
   </style>
+
+  <!-- LOGOUT CONFIRM MODAL (Global) -->
+  <div id="layout-logout-modal"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+    <div
+      style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:22rem; overflow:hidden; animation:fadeUp 0.2s ease both;">
+      <div style="background:linear-gradient(to right,#1e3a8a,#1e40af); height:0.35rem;"></div>
+      <div style="padding:2rem 1.5rem 1.5rem; text-align:center;">
+        <div
+          style="width:4.5rem; height:4.5rem; border-radius:9999px; background:#eff6ff; border:2px solid #bfdbfe; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
+          <span class="material-symbols-outlined"
+            style="font-size:2.2rem; color:#1e40af; font-variation-settings:'FILL' 1;">logout</span>
+        </div>
+        <h4 style="font-weight:800; font-size:1.05rem; color:#0f172a; margin:0 0 0.4rem;">Log out?</h4>
+        <p style="font-size:0.8rem; color:#64748b; margin:0; line-height:1.5;">You will be returned to the login screen.
+        </p>
+      </div>
+      <div style="padding:0 1.5rem 1.5rem; display:flex; gap:0.75rem;">
+        <button id="layout-logout-cancel"
+          style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;"
+          onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+        <button id="layout-logout-ok"
+          style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;"
+          onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('layout-logout-modal');
+      var logoutBtn = document.getElementById('sidebar-logout');
+      if (logoutBtn && modal) {
+        logoutBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          modal.style.display = 'flex';
+        });
+      }
+      var cancelBtn = document.getElementById('layout-logout-cancel');
+      var okBtn = document.getElementById('layout-logout-ok');
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () { modal.style.display = 'none'; });
+      }
+      if (okBtn) {
+        okBtn.addEventListener('click', function () {
+          document.getElementById('global-logout-form').submit();
+        });
+      }
+      if (modal) {
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+    })();
+  </script>
 </body>
+
 </html>

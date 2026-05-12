@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Sign In | CPP Portal</title>
+<meta name="description" content="Student portal email login for CPP Institutional Records Management System."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block; vertical-align: middle;
+  }
+  .hero-bg {
+    background: linear-gradient(160deg, #00236f 0%, #1e3a8a 50%, #004942 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero-bg::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 20% 30%, rgba(78,189,176,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(176,196,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fadeUp 0.45s ease both; }
+</style>
+</head>
+<body class="min-h-screen flex bg-slate-50">
+
+<!-- Left sidebar -->
+<div class="hero-bg hidden lg:flex lg:w-[420px] xl:w-[480px] shrink-0 flex-col justify-between p-10 relative z-10">
+  <div>
+    <a href="/login/student" class="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-10 text-sm font-medium">
+      <span class="material-symbols-outlined text-sm">arrow_back</span>Back to activation
+    </a>
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings: 'FILL' 1;">person</span>
+      </div>
+      <div>
+        <h2 class="text-white font-black text-xl">CPP</h2>
+        <p class="text-white/50 text-xs font-medium uppercase tracking-wider">Student Portal</p>
+      </div>
+    </div>
+    <h1 class="text-white font-bold text-3xl leading-snug max-w-xs">Welcome<br/>Back</h1>
+    <p class="text-white/55 text-sm mt-3 max-w-xs leading-relaxed">
+      Sign in with your institutional email and the permanent password you created during activation.
+    </p>
+  </div>
+
+  <div class="space-y-3">
+    <p class="text-white/40 text-xs font-semibold uppercase tracking-widest mb-2">Haven't activated yet?</p>
+    <a href="/login/student"
+       class="flex items-center gap-3 bg-white/10 hover:bg-white/15 transition-colors rounded-xl px-4 py-3 text-white text-sm font-medium">
+      <span class="material-symbols-outlined text-teal-300 text-base">mail</span>
+      Activate with temporary code
+    </a>
+  </div>
+
+  <p class="text-white/25 text-xs">© 2024 CPP Academic Systems</p>
+</div>
+
+<!-- Right: Login Form -->
+<main class="flex-1 flex items-center justify-center px-6 py-12">
+  <div class="w-full max-w-[420px] space-y-6">
+
+    <!-- Mobile back -->
+    <a href="/login/student" class="lg:hidden flex items-center gap-1.5 text-slate-500 hover:text-blue-900 transition-colors text-sm font-medium">
+      <span class="material-symbols-outlined text-base">arrow_back</span>Back to activation
+    </a>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-5 animate-fade-up">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Student Sign In</h2>
+        <p class="text-sm text-slate-500 mt-1">Enter your email and password to access your records.</p>
+      </div>
+
+      <!-- Error message placeholder -->
+      <!-- AUTH_MESSAGE -->
+
+      <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+        <div class="flex flex-col gap-1">
+          <label for="email" class="text-xs font-bold uppercase tracking-wider text-slate-500">Institutional Email</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">mail</span>
+            <input id="email" name="email" type="email" placeholder="yourname@plv.edu.ph"
+                   autocomplete="email" required
+                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="password" class="text-xs font-bold uppercase tracking-wider text-slate-500">Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
+            <input id="password" name="password" type="password" placeholder="Your password"
+                   autocomplete="current-password" required
+                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+          </div>
+        </div>
+
+        <div id="error-msg" class="hidden text-sm font-medium px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-700"></div>
+
+        <button id="btn-login" type="submit"
+                class="w-full h-12 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-base">login</span>Sign In
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-slate-400">
+        Not yet activated? <a href="/login/student" class="text-blue-700 font-semibold hover:underline">Use temporary code</a>
+      </p>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // Pre-fill error from query string (server-side redirect fallback)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('error')) {
+    const el = document.getElementById('error-msg');
+    el.textContent = decodeURIComponent(params.get('error'));
+    el.classList.remove('hidden');
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('error-msg');
+    errEl.classList.add('hidden');
+
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('btn-login');
+
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+    </svg>Signing in…`;
+
+    try {
+      const res  = await fetch('/login/student/email', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        window.location.href = '/student';
+      } else {
+        errEl.textContent = data.error || 'Invalid email or password.';
+        errEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      errEl.textContent = 'Network error: ' + err.message;
+      errEl.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<span class="material-symbols-outlined text-base">login</span>Sign In`;
+    }
+  }
+
+  document.getElementById('password').addEventListener('keydown', e => e.key === 'Enter' && handleLogin(e));
+</script>
+</body>
+</html>

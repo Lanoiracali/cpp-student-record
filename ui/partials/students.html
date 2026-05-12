@@ -1,20 +1,19 @@
 <!-- Student Index Card — loaded dynamically via window.loadStudentCard(id) -->
 <section class="space-y-6" id="student-card-root">
-  <div class="flex items-center justify-center py-20 text-slate-400">
-    <span class="material-symbols-outlined text-4xl">progress_activity</span>
+  <div class="flex items-center justify-center py-20 text-slate-300">
+    <span class="material-symbols-outlined text-5xl">progress_activity</span>
   </div>
 </section>
 
 <script>
 (function() {
-  // Called from the members list
+
   window.loadStudentCard = async function(studentId) {
     const root = document.querySelector('#page-body') || document.querySelector('#student-card-root');
-    root.innerHTML = `<section class="space-y-6" id="student-card-root">
-      <div class="flex items-center justify-center py-20 text-slate-400">
-        <span class="material-symbols-outlined animate-spin text-4xl">progress_activity</span>
-      </div></section>`;
-
+    root.innerHTML = `<div class="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3">
+      <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span>
+      <p class="text-sm">Loading student records…</p>
+    </div>`;
     try {
       const [stuRes, recRes] = await Promise.all([
         fetch(`/api/students/${studentId}`),
@@ -22,202 +21,310 @@
       ]);
       const stuData = await stuRes.json();
       const recData = await recRes.json();
-      if (!stuData.success) throw new Error(stuData.error);
+      if (!stuData.success) throw new Error(stuData.error || 'Failed to load student');
       renderCard(stuData.student, recData.records || [], root);
     } catch(e) {
-      root.innerHTML = `<div class="text-red-500 p-4">Failed to load student: ${e.message}</div>`;
+      root.innerHTML = `<div class="flex flex-col items-center justify-center py-24 text-red-500 space-y-2">
+        <span class="material-symbols-outlined text-5xl block">error</span>
+        <p class="font-semibold">Failed to load student</p>
+        <p class="text-sm">${e.message}</p>
+      </div>`;
     }
   };
 
   function renderCard(s, records, container) {
-    const initials = (s.first_name[0] || '') + (s.surname[0] || '');
-    const fullName = `${s.surname}, ${s.first_name}${s.middle_initial ? ' ' + s.middle_initial + '.' : ''}`;
+    const initials = (s.first_name?.[0] || '') + (s.surname?.[0] || '');
+    const fullName = `${s.surname || ''}, ${s.first_name || ''}${s.middle_initial ? ' ' + s.middle_initial + '.' : ''}`;
+
+    // Build records rows as a separate string to avoid nested template literal issues
+    let rowsHtml = '';
+    records.forEach(function(r, idx) {
+      const date = r.date ? r.date.split('T')[0] : '—';
+      const pct = (r.score != null && r.total_score) ? Math.round((r.score / r.total_score) * 100) : null;
+      const scoreColor = pct === null ? '#1e293b' :
+        pct >= 90 ? '#0f766e' : pct >= 75 ? '#1d4ed8' : '#dc2626';
+      const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+      // Store record data safely in a data attribute to avoid quote escaping issues
+      const recJson = encodeURIComponent(JSON.stringify(r));
+      rowsHtml += `<tr style="background:${rowBg}; border-top:1px solid #f1f5f9;" class="group hover:bg-slate-50 transition-colors" id="rec-row-${r.id}">
+        <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">${date}</td>
+        <td class="px-4 py-3.5 font-semibold text-slate-800">${r.type_of_undertaking || '—'}</td>
+        <td class="px-4 py-3.5 text-right">
+          <span style="color:${scoreColor}; font-weight:900; font-size:1rem;">${r.score != null ? r.score : '—'}</span>
+        </td>
+        <td class="px-4 py-3.5 text-right text-xs text-slate-400">
+          ${r.total_score != null ? `/ ${r.total_score}` : ''}
+          ${pct !== null ? `<span style="margin-left:0.25rem; font-weight:600; color:${scoreColor};">(${pct}%)</span>` : ''}
+        </td>
+        <td class="px-4 py-3.5 text-xs text-slate-500 hidden sm:table-cell max-w-[160px] truncate" title="${(r.remarks || '').replace(/"/g, '&quot;')}">${r.remarks || '—'}</td>
+        <td class="px-4 py-3.5">
+          <div style="display:flex; align-items:center; justify-content:center; gap:0.25rem;">
+            <button data-rec="${recJson}" onclick="window._editFromBtn(this)"
+                    style="padding:0.375rem; border-radius:0.5rem; background:#eff6ff; color:#1d4ed8; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s;" title="Edit"
+                    onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+              <span class="material-symbols-outlined" style="font-size:1.1rem;">edit</span>
+            </button>
+            <button onclick="window.deleteRecord(${r.id})"
+                    style="padding:0.375rem; border-radius:0.5rem; background:#fef2f2; color:#dc2626; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s;" title="Delete"
+                    onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+              <span class="material-symbols-outlined" style="font-size:1.1rem;">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    });
+
+    // Build average summary
+    let summaryHtml = '';
+    const scored = records.filter(function(r) { return r.score != null && r.total_score != null; });
+    if (scored.length) {
+      const avg = (scored.reduce(function(a, r) { return a + (r.score / r.total_score) * 100; }, 0) / scored.length).toFixed(1);
+      const avgStyle = avg >= 90 ? 'color:#0f766e; background:#f0fdfa; border:1px solid #99f6e4;' :
+                       avg >= 75 ? 'color:#1d4ed8; background:#eff6ff; border:1px solid #bfdbfe;' :
+                                   'color:#b91c1c; background:#fef2f2; border:1px solid #fecaca;';
+      summaryHtml = `<div style="display:flex; align-items:center; justify-content:flex-end; gap:0.5rem; padding-top:0.25rem;">
+        <span style="font-size:0.75rem; color:#64748b;">Average:</span>
+        <span style="font-size:0.875rem; font-weight:900; padding:0.2rem 0.75rem; border-radius:9999px; ${avgStyle}">${avg}%</span>
+      </div>`;
+    }
+
+    const emptyHtml = `<div class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-2">
+      <span class="material-symbols-outlined text-5xl">assignment_late</span>
+      <p class="font-semibold text-slate-500">No records yet</p>
+      <p class="text-sm">Click <strong class="text-blue-900">Add Record</strong> to begin.</p>
+    </div>`;
+
+    const tableHtml = records.length === 0 ? emptyHtml : `
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+              <th class="px-4 py-3 text-left">Date</th>
+              <th class="px-4 py-3 text-left">Type</th>
+              <th class="px-4 py-3 text-right">Score</th>
+              <th class="px-4 py-3 text-right">Total</th>
+              <th class="px-4 py-3 text-left hidden sm:table-cell">Remarks</th>
+              <th class="px-4 py-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+      ${summaryHtml}`;
 
     container.innerHTML = `
-    <section class="space-y-6" id="student-card-root" data-student-id="${s.id}">
+    <style>
+      @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-up { animation: fadeUp 0.4s ease both; }
+    </style>
+    <div class="animate-fade-up space-y-5" id="student-card-root" data-student-id="${s.id}">
 
       <!-- Breadcrumb -->
-      <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-        <button onclick="window.reloadRecords()" class="hover:text-blue-900 font-medium transition-colors">Records</button>
-        <span class="material-symbols-outlined text-sm">chevron_right</span>
-        <button onclick="window.loadSectionDetail(${s.section_id}, '')" class="hover:text-blue-900 font-medium transition-colors">${s.section_name}</button>
-        <span class="material-symbols-outlined text-sm">chevron_right</span>
-        <button onclick="window.loadGroupDetail(${s.group_id}, '${s.section_name}', ${s.section_id})" class="hover:text-blue-900 font-medium transition-colors">Group ${s.group_number}</button>
-        <span class="material-symbols-outlined text-sm">chevron_right</span>
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <button onclick="window.reloadRecords()" class="text-blue-700 font-semibold hover:underline">Records</button>
+        <span class="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
+        <button onclick="window.loadSectionDetail(${s.section_id}, '')" class="text-blue-700 font-semibold hover:underline">${s.section_name || ''}</button>
+        <span class="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
+        <button onclick="window.loadGroupDetail(${s.group_id}, '${(s.section_name || '').replace(/'/g, "\\'")}', ${s.section_id})" class="text-blue-700 font-semibold hover:underline">Group ${s.group_number}</button>
+        <span class="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
         <span class="font-bold text-slate-900">${s.first_name} ${s.surname}</span>
       </div>
 
       <!-- Index Card -->
-      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
-        <!-- Card Header -->
-        <div class="bg-gradient-to-r from-blue-900 to-blue-800 p-5">
-          <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start">
+        <!-- Card header -->
+        <div style="background: linear-gradient(to right, #1e3a8a, #1e40af, #0f766e); padding: 1.5rem 1.75rem;">
+          <div style="display:grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: start;">
 
             <!-- Left: Avatar -->
-            <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center text-white font-black text-xl shrink-0">
+            <div style="width:5rem; height:5rem; border-radius:9999px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:1.875rem; flex-shrink:0; align-self:center;">
               ${initials.toUpperCase()}
             </div>
 
-            <!-- Center: Group info -->
-            <div class="text-center pt-1">
-              <p class="text-blue-200 text-xs font-semibold uppercase tracking-widest">Group ${s.group_number}</p>
-              <p class="text-white font-bold text-lg leading-tight mt-0.5">${s.group_name}</p>
-              <p class="text-blue-200 text-xs mt-1">${s.section_name}</p>
+            <!-- Center: Group -->
+            <div style="text-align:center; padding-top:0.5rem;">
+              <p style="color:#bfdbfe; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.2em; margin:0;">Group ${s.group_number}</p>
+              <p style="color:#fff; font-weight:900; font-size:1.25rem; line-height:1.2; margin:0.25rem 0 0;">${s.group_name || ''}</p>
+              <p style="color:#bfdbfe; font-size:0.875rem; margin:0.25rem 0 0;">${s.section_name || ''}</p>
             </div>
 
-            <!-- Right: Name / Stud# / Section -->
-            <div class="text-right pt-1 space-y-0.5">
-              <p class="text-white font-bold text-sm leading-tight">${fullName}</p>
-              <p class="text-blue-200 text-xs font-mono">${s.stud_number}</p>
-              <p class="text-blue-200 text-xs">${s.section_name}</p>
+            <!-- Right: Identity -->
+            <div style="text-align:right; padding-top:0.25rem;">
+              <p style="color:#fff; font-weight:700; font-size:1.1rem; line-height:1.3; margin:0;">${fullName}</p>
+              <p style="color:#bfdbfe; font-family:monospace; font-size:0.875rem; margin:0.2rem 0 0;">${s.stud_number || ''}</p>
+              <p style="color:#bfdbfe; font-size:0.75rem; margin:0.2rem 0 0;">${s.section_name || ''}</p>
+              <span style="display:inline-block; margin-top:0.5rem; font-size:0.7rem; font-weight:700; color:#5eead4; background:rgba(19,78,74,0.5); border:1px solid rgba(20,184,166,0.4); padding:0.2rem 0.65rem; border-radius:9999px;">
+                Group ${s.group_number} — ${s.group_name || ''}
+              </span>
             </div>
+
           </div>
         </div>
 
-        <!-- Records Table -->
-        <div class="p-5 space-y-4">
+        <!-- Records table -->
+        <div class="p-5 sm:p-6 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="font-bold text-slate-800 flex items-center gap-2">
-              <span class="material-symbols-outlined text-base text-blue-900">assignment</span>
-              Records
-              <span class="text-xs font-normal text-slate-400 ml-1" id="rec-count">${records.length} entr${records.length !== 1 ? 'ies' : 'y'}</span>
-            </h3>
-            <button onclick="window.openRecordModal(${s.id})"
-                    class="flex items-center gap-1.5 px-3 py-2 bg-blue-900 text-white text-xs font-bold rounded-xl hover:bg-blue-800 transition-colors">
-              <span class="material-symbols-outlined text-sm">add</span>Add Record
-            </button>
+            <h2 class="font-bold text-slate-800 flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-900" style="font-variation-settings:'FILL' 1">assignment</span>
+              Academic Records
+              <span class="text-xs font-normal text-slate-400 ml-1">${records.length} entr${records.length !== 1 ? 'ies' : 'y'}</span>
+            </h2>
+            <div class="flex items-center gap-2">
+              <button onclick="window.print()" class="flex items-center gap-1.5 px-3 py-2 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all">
+                <span class="material-symbols-outlined text-sm">print</span><span class="hidden sm:inline">Print</span>
+              </button>
+              <button id="add-record-btn" class="flex items-center gap-1.5 px-3 py-2 bg-blue-900 text-white text-xs font-bold rounded-xl hover:bg-blue-800 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm">add</span><span class="hidden sm:inline">Add Record</span>
+              </button>
+            </div>
           </div>
 
-          <div class="overflow-x-auto rounded-xl border border-slate-200">
-            <table class="w-full text-sm" id="records-table">
-              <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                <tr>
-                  <th class="px-4 py-3 text-left">Date</th>
-                  <th class="px-4 py-3 text-left">Type</th>
-                  <th class="px-4 py-3 text-right">Score</th>
-                  <th class="px-4 py-3 text-right">Total</th>
-                  <th class="px-4 py-3 text-left">Remarks</th>
-                  <th class="px-4 py-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="records-tbody">
-                ${records.length === 0 ? `
-                <tr><td colspan="6" class="px-4 py-10 text-center text-slate-400 text-sm">
-                  No records yet. Click <strong>Add Record</strong> to begin.
-                </td></tr>` :
-                records.map(r => recordRow(r)).join('')}
-              </tbody>
-            </table>
-          </div>
+          ${tableHtml}
         </div>
       </div>
 
       <!-- Record Modal -->
-      <div id="record-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h4 id="record-modal-title" class="font-bold text-slate-900">Add Record</h4>
-            <button onclick="document.getElementById('record-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700">
-              <span class="material-symbols-outlined">close</span>
+      <div id="record-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+        <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:28rem; overflow:hidden; animation:fadeUp 0.25s ease both;">
+
+          <!-- Modal header with gradient accent -->
+          <div style="background:linear-gradient(to right,#1e3a8a,#1e40af,#0f766e); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:2.25rem; height:2.25rem; border-radius:0.6rem; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center;">
+                <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem;" id="record-modal-icon">edit_note</span>
+              </div>
+              <div>
+                <p style="color:rgba(191,219,254,0.8); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin:0;">Student Record</p>
+                <h4 id="record-modal-title" style="color:#fff; font-weight:800; font-size:1rem; margin:0;">Add Record</h4>
+              </div>
+            </div>
+            <button id="modal-close-btn" style="background:rgba(255,255,255,0.15); border:none; border-radius:0.5rem; padding:0.4rem; cursor:pointer; color:#fff; display:flex; align-items:center;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+              <span class="material-symbols-outlined" style="font-size:1.2rem;">close</span>
             </button>
           </div>
-          <div class="p-6 space-y-4">
+
+          <!-- Modal body -->
+          <div style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
             <input type="hidden" id="rec-edit-id" value=""/>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Date</label>
-                <input id="rec-date" type="date"
-                       class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Date</label>
+                <input id="rec-date" type="date" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+                       onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
               </div>
-              <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Type</label>
-                <input id="rec-type" type="text" placeholder="e.g. Quiz, Lab, Exam"
-                       class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Score</label>
-                <input id="rec-score" type="number" step="0.01" min="0" placeholder="0"
-                       class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Score</label>
-                <input id="rec-total" type="number" step="0.01" min="0" placeholder="100"
-                       class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Type</label>
+                <input id="rec-type" type="text" placeholder="Quiz, Lab, Exam…" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+                       onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
               </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Remarks</label>
-              <input id="rec-remarks" type="text" placeholder="Optional notes"
-                     class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Score</label>
+                <input id="rec-score" type="number" step="0.01" min="0" placeholder="0" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+                       onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Total Score</label>
+                <input id="rec-total" type="number" step="0.01" min="0" placeholder="100" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+                       onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
+              </div>
             </div>
-            <div id="rec-modal-error" class="hidden text-sm text-red-600 font-medium"></div>
-            <div class="flex gap-3 pt-1">
-              <button onclick="document.getElementById('record-modal').classList.add('hidden')"
-                      class="flex-1 py-2.5 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
-                Cancel
-              </button>
-              <button id="rec-save-btn" onclick="window.saveRecord(${s.id})"
-                      class="flex-1 py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors">
-                Save
-              </button>
+
+            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+              <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Remarks <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#94a3b8;">(optional)</span></label>
+              <input id="rec-remarks" type="text" placeholder="Notes, observations…" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
+            </div>
+
+            <!-- Error -->
+            <div id="rec-modal-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
+              <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
+              <span id="rec-modal-error-text"></span>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+              <button id="modal-cancel-btn" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;"
+                      onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+              <button id="rec-save-btn" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(30,64,175,0.35); transition:opacity 0.15s;"
+                      onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Save Record</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Delete confirm modal -->
-      <div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-          <div class="text-center space-y-2">
-            <span class="material-symbols-outlined text-5xl text-red-500" style="font-variation-settings:'FILL' 1">delete_forever</span>
-            <h4 class="font-bold text-slate-900">Delete Record?</h4>
-            <p class="text-sm text-slate-500">This action cannot be undone.</p>
+      <!-- Delete confirm -->
+      <div id="delete-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+        <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:22rem; overflow:hidden; animation:fadeUp 0.25s ease both;">
+
+          <!-- Red accent top bar -->
+          <div style="background:linear-gradient(to right,#7f1d1d,#dc2626); height:0.35rem;"></div>
+
+          <div style="padding:2rem 1.5rem 1.5rem; text-align:center;">
+            <!-- Icon badge -->
+            <div style="width:4.5rem; height:4.5rem; border-radius:9999px; background:#fef2f2; border:2px solid #fecaca; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
+              <span class="material-symbols-outlined" style="font-size:2.2rem; color:#dc2626; font-variation-settings:'FILL' 1;">delete_forever</span>
+            </div>
+            <h4 style="font-weight:800; font-size:1.1rem; color:#0f172a; margin:0 0 0.4rem;">Delete this record?</h4>
+            <p style="font-size:0.85rem; color:#64748b; margin:0;">This action is permanent and cannot be undone.</p>
           </div>
-          <div class="flex gap-3">
-            <button onclick="document.getElementById('delete-modal').classList.add('hidden')"
-                    class="flex-1 py-2.5 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50">Cancel</button>
-            <button id="confirm-delete-btn"
-                    class="flex-1 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700">Delete</button>
+
+          <div style="padding:0 1.5rem 1.5rem; display:flex; gap:0.75rem;">
+            <button id="delete-cancel-btn" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; transition:background 0.15s;"
+                    onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Cancel</button>
+            <button id="confirm-delete-btn" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#991b1b,#dc2626); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(220,38,38,0.35); transition:opacity 0.15s;"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Delete</button>
           </div>
         </div>
       </div>
 
-    </section>`;
+    </div>`;
 
-    bindCardEvents(s.id, records);
+    bindCardEvents(s.id);
   }
 
-  function recordRow(r) {
-    const dateStr = r.date ? r.date.split('T')[0] : '—';
-    const score = r.score != null ? r.score : '—';
-    const total = r.total_score != null ? `/ ${r.total_score}` : '';
-    return `<tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors" id="rec-row-${r.id}">
-      <td class="px-4 py-3 text-slate-600 text-xs">${dateStr}</td>
-      <td class="px-4 py-3 font-medium">${r.type_of_undertaking}</td>
-      <td class="px-4 py-3 text-right font-bold text-blue-900">${score}</td>
-      <td class="px-4 py-3 text-right text-slate-500 text-xs">${total}</td>
-      <td class="px-4 py-3 text-slate-500 text-xs">${r.remarks || '—'}</td>
-      <td class="px-4 py-3 text-center">
-        <div class="flex items-center justify-center gap-2">
-          <button onclick="window.editRecord(${JSON.stringify(r).replace(/"/g,'&quot;')})"
-                  class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-700 transition-colors" title="Edit">
-            <span class="material-symbols-outlined text-base">edit</span>
-          </button>
-          <button onclick="window.deleteRecord(${r.id})"
-                  class="p-1.5 rounded-lg hover:bg-red-50 text-red-600 transition-colors" title="Delete">
-            <span class="material-symbols-outlined text-base">delete</span>
-          </button>
-        </div>
-      </td>
-    </tr>`;
-  }
+  // Helper: edit button uses data attribute to avoid inline JSON quoting issues
+  window._editFromBtn = function(btn) {
+    try {
+      const r = JSON.parse(decodeURIComponent(btn.getAttribute('data-rec')));
+      window.editRecord(r);
+    } catch(e) { alert('Could not load record data.'); }
+  };
 
   function bindCardEvents(studentId) {
-    // Modal open
-    window.openRecordModal = function(sid) {
+    function showModal(id)  { var m = document.getElementById(id); if(m) m.style.display = 'flex'; }
+    function hideModal(id)  { var m = document.getElementById(id); if(m) m.style.display = 'none'; }
+    function showErr(msg)   {
+      var e = document.getElementById('rec-modal-error');
+      var t = document.getElementById('rec-modal-error-text');
+      if(e) { e.style.display = 'flex'; }
+      if(t) t.textContent = msg;
+    }
+    function hideErr() {
+      var e = document.getElementById('rec-modal-error');
+      if(e) e.style.display = 'none';
+    }
+
+    // Add Record button
+    var addBtn = document.getElementById('add-record-btn');
+    if (addBtn) addBtn.onclick = function() { window.openRecordModal(); };
+
+    // Modal close / cancel
+    var closeBtn  = document.getElementById('modal-close-btn');
+    var cancelBtn = document.getElementById('modal-cancel-btn');
+    if (closeBtn)  closeBtn.onclick  = function() { hideModal('record-modal'); };
+    if (cancelBtn) cancelBtn.onclick = function() { hideModal('record-modal'); };
+
+    // Delete modal cancel
+    var delCancelBtn = document.getElementById('delete-cancel-btn');
+    if (delCancelBtn) delCancelBtn.onclick = function() { hideModal('delete-modal'); };
+
+    window.openRecordModal = function() {
       document.getElementById('rec-edit-id').value = '';
       document.getElementById('rec-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('rec-type').value = '';
@@ -225,8 +332,10 @@
       document.getElementById('rec-total').value = '';
       document.getElementById('rec-remarks').value = '';
       document.getElementById('record-modal-title').textContent = 'Add Record';
-      document.getElementById('rec-modal-error').classList.add('hidden');
-      document.getElementById('record-modal').classList.remove('hidden');
+      var icon = document.getElementById('record-modal-icon');
+      if (icon) icon.textContent = 'add_circle';
+      hideErr();
+      showModal('record-modal');
     };
 
     window.editRecord = function(r) {
@@ -237,64 +346,78 @@
       document.getElementById('rec-total').value = r.total_score != null ? r.total_score : '';
       document.getElementById('rec-remarks').value = r.remarks || '';
       document.getElementById('record-modal-title').textContent = 'Edit Record';
-      document.getElementById('rec-modal-error').classList.add('hidden');
-      document.getElementById('record-modal').classList.remove('hidden');
+      var icon = document.getElementById('record-modal-icon');
+      if (icon) icon.textContent = 'edit_note';
+      hideErr();
+      showModal('record-modal');
     };
+
+    var saveBtn = document.getElementById('rec-save-btn');
+    if (saveBtn) saveBtn.onclick = function() { window.saveRecord(studentId); };
 
     window.saveRecord = async function(sid) {
-      const editId = document.getElementById('rec-edit-id').value;
-      const body = {
-        date: document.getElementById('rec-date').value,
-        type_of_undertaking: document.getElementById('rec-type').value,
-        score: document.getElementById('rec-score').value,
-        total_score: document.getElementById('rec-total').value,
-        remarks: document.getElementById('rec-remarks').value,
+      var editId = document.getElementById('rec-edit-id').value;
+      var body = {
+        date:               document.getElementById('rec-date').value,
+        type_of_undertaking:document.getElementById('rec-type').value,
+        score:              document.getElementById('rec-score').value,
+        total_score:        document.getElementById('rec-total').value,
+        remarks:            document.getElementById('rec-remarks').value,
       };
-      const errEl = document.getElementById('rec-modal-error');
-      const btn = document.getElementById('rec-save-btn');
+      var btn = document.getElementById('rec-save-btn');
       if (!body.date || !body.type_of_undertaking || body.score === '') {
-        errEl.textContent = 'Date, type, and score are required.';
-        errEl.classList.remove('hidden'); return;
+        showErr('Date, type, and score are required.');
+        return;
       }
-      errEl.classList.add('hidden');
+      hideErr();
       btn.textContent = 'Saving…'; btn.disabled = true;
+      btn.style.opacity = '0.7';
       try {
-        const url = editId ? `/api/records/${editId}` : `/api/students/${sid}/records`;
-        const method = editId ? 'PUT' : 'POST';
-        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await res.json();
+        var url    = editId ? `/api/records/${editId}` : `/api/students/${sid}/records`;
+        var method = editId ? 'PUT' : 'POST';
+        var res    = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        var data   = await res.json();
         if (!data.success) throw new Error(data.error);
-        document.getElementById('record-modal').classList.add('hidden');
-        // Reload card
+        hideModal('record-modal');
         window.loadStudentCard(sid);
       } catch(e) {
-        errEl.textContent = e.message; errEl.classList.remove('hidden');
+        showErr(e.message);
       } finally {
-        btn.textContent = 'Save'; btn.disabled = false;
+        btn.textContent = 'Save Record'; btn.disabled = false;
+        btn.style.opacity = '1';
       }
     };
 
-    let pendingDeleteId = null;
+    var pendingDeleteId = null;
     window.deleteRecord = function(recId) {
       pendingDeleteId = recId;
-      document.getElementById('delete-modal').classList.remove('hidden');
+      showModal('delete-modal');
     };
 
-    const confirmBtn = document.getElementById('confirm-delete-btn');
+    var confirmBtn = document.getElementById('confirm-delete-btn');
     if (confirmBtn) {
       confirmBtn.onclick = async function() {
         if (!pendingDeleteId) return;
+        confirmBtn.textContent = 'Deleting…'; confirmBtn.disabled = true;
         try {
-          const res = await fetch(`/api/records/${pendingDeleteId}`, { method: 'DELETE' });
-          const data = await res.json();
+          var res  = await fetch(`/api/records/${pendingDeleteId}`, { method: 'DELETE' });
+          var data = await res.json();
           if (!data.success) throw new Error(data.error);
-          document.getElementById('delete-modal').classList.add('hidden');
+          hideModal('delete-modal');
           window.loadStudentCard(studentId);
         } catch(e) {
           alert('Delete failed: ' + e.message);
+          confirmBtn.textContent = 'Delete'; confirmBtn.disabled = false;
         }
       };
     }
   }
+
+  // Auto-load if we navigated here from the records list
+  if (window.__currentStudentId) {
+    window.loadStudentCard(window.__currentStudentId);
+    window.__currentStudentId = null;
+  }
+
 })();
 </script>

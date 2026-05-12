@@ -5,16 +5,6 @@
       <h2 class="mt-2 text-4xl font-bold text-slate-950">Academic Dashboard</h2>
       <p class="mt-2 max-w-2xl text-slate-600">Live overview of enrollments, sections, and record health for the current term.</p>
     </div>
-    <div class="flex gap-2">
-      <button class="flex items-center gap-1.5 px-3 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
-        <span class="material-symbols-outlined text-base">calendar_today</span>
-        Academic Calendar
-      </button>
-      <button class="flex items-center gap-1.5 px-3 py-2 bg-blue-900 text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors">
-        <span class="material-symbols-outlined text-base">file_download</span>
-        Export PDF
-      </button>
-    </div>
   </div>
 
   <!-- Stats Grid: 4 cards -->
@@ -41,7 +31,7 @@
         <div class="mt-2 text-4xl font-bold text-blue-900">{{PROCESSED_RECORDS}}</div>
         <div class="flex items-center gap-1 text-teal-600 mt-1.5">
           <span class="material-symbols-outlined text-sm">check_circle</span>
-          <span class="text-xs font-semibold">98% Success</span>
+          <span class="text-xs font-semibold">Records</span>
         </div>
       </div>
       <div class="w-11 h-11 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
@@ -80,84 +70,121 @@
     </article>
   </div>
 
-  <!-- Activity + Quick Tools -->
-  <div class="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
-    <section class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-      <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-800">Recent Activity</h3>
-        <button class="text-xs font-bold text-blue-900 uppercase tracking-widest hover:underline"
-                hx-get="/partials/records" hx-target="#page-body" hx-push-url="true">Open Records</button>
+  <!-- Sections Overview -->
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-800 text-base" style="font-variation-settings:'FILL' 1">class</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">My Sections</h3>
       </div>
-      <div class="p-5 space-y-4">
-        <div class="flex gap-3 relative pb-4">
-          <div class="absolute left-[15px] top-8 bottom-0 w-px bg-slate-100"></div>
-          <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 z-10">
-            <span class="material-symbols-outlined text-lg">person_add</span>
-          </div>
-          <div>
-            <p class="text-sm text-slate-800"><strong>Sarah Jenkins</strong> completed registration for <strong>CS101</strong>.</p>
-            <span class="text-xs text-slate-400">2 minutes ago • ID: 2024-0012</span>
-          </div>
-        </div>
-        <div class="flex gap-3 relative pb-4">
-          <div class="absolute left-[15px] top-8 bottom-0 w-px bg-slate-100"></div>
-          <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center shrink-0 z-10">
-            <span class="material-symbols-outlined text-lg">verified</span>
-          </div>
-          <div>
-            <p class="text-sm text-slate-800"><strong>Graduation Audit</strong> completed for candidate #89221.</p>
-            <span class="text-xs text-slate-400">45 minutes ago • Office of Records</span>
-          </div>
-        </div>
-        <div class="flex gap-3 relative pb-4">
-          <div class="absolute left-[15px] top-8 bottom-0 w-px bg-slate-100"></div>
-          <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 z-10">
-            <span class="material-symbols-outlined text-lg">warning</span>
-          </div>
-          <div>
-            <p class="text-sm text-slate-800">Flagged transcript discrepancy for <strong>Michael Torres</strong>.</p>
-            <span class="text-xs text-slate-400">2 hours ago • System Alert</span>
-          </div>
-        </div>
-        <div class="flex gap-3">
-          <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 z-10">
-            <span class="material-symbols-outlined text-lg">mail</span>
-          </div>
-          <div>
-            <p class="text-sm text-slate-800">Mass notification sent to <strong>Waitlisted Students</strong> (Spring '25).</p>
-            <span class="text-xs text-slate-400">4 hours ago • Automation Engine</span>
-          </div>
-        </div>
-      </div>
-    </section>
+      <button class="text-xs font-bold text-blue-900 uppercase tracking-widest hover:underline transition-colors"
+              hx-get="/partials/records" hx-target="#page-body" hx-push-url="true">
+        View All →
+      </button>
+    </div>
 
-    <aside class="space-y-5">
-      <!-- Quick Tools -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h3 class="text-base font-bold text-slate-800">Quick Tools</h3>
-        </div>
-        <div class="p-5 space-y-3">
-          <a class="flex items-center gap-3 w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:border-teal-500 hover:bg-teal-50 hover:text-teal-700 transition-all"
-             href="/register/teacher">
-            <span class="material-symbols-outlined text-base">person_add</span>
-            Teacher Registration
-          </a>
-          <a class="flex items-center gap-3 w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-all"
-             href="/register">
-            <span class="material-symbols-outlined text-base">how_to_reg</span>
-            Student Registration
-          </a>
-          <form method="POST" action="/auth/logout"
-                hx-post="/auth/logout" hx-target="body">
-            <button class="flex items-center gap-3 w-full px-4 py-3 rounded-lg border border-slate-200 text-red-600 text-sm font-medium hover:border-red-300 hover:bg-red-50 transition-all"
-                    type="submit">
-              <span class="material-symbols-outlined text-base">logout</span>
-              Sign Out
-            </button>
-          </form>
-        </div>
+    <!-- Section cards container -->
+    <div id="dash-sections" class="p-6">
+      <div class="flex items-center justify-center py-12 text-slate-300">
+        <span class="material-symbols-outlined animate-spin text-4xl">progress_activity</span>
       </div>
-    </aside>
+    </div>
   </div>
 </section>
+
+<script>
+(function() {
+  const ACCENT_COLORS = [
+    { bg: 'bg-blue-600',   light: 'bg-blue-50',   text: 'text-blue-700',   icon: 'text-blue-800',   border: 'border-blue-100' },
+    { bg: 'bg-teal-600',   light: 'bg-teal-50',   text: 'text-teal-700',   icon: 'text-teal-800',   border: 'border-teal-100' },
+    { bg: 'bg-indigo-600', light: 'bg-indigo-50', text: 'text-indigo-700', icon: 'text-indigo-800', border: 'border-indigo-100' },
+    { bg: 'bg-violet-600', light: 'bg-violet-50', text: 'text-violet-700', icon: 'text-violet-800', border: 'border-violet-100' },
+  ];
+
+  async function loadDashSections() {
+    const container = document.getElementById('dash-sections');
+    if (!container) return;
+
+    try {
+      const res  = await fetch('/api/sections');
+      const data = await res.json();
+      if (!data.success || !data.sections || data.sections.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12 text-slate-300">
+            <span class="material-symbols-outlined text-5xl mb-3">folder_open</span>
+            <p class="text-slate-400 text-sm">No sections found. <a hx-get="/partials/records" hx-target="#page-body" hx-push-url="true" href="/records" class="text-blue-700 font-semibold hover:underline">Go to Records</a> to create one.</p>
+          </div>`;
+        htmx.process(container);
+        return;
+      }
+
+      // Show up to 4 sections
+      const sections = data.sections.slice(0, 4);
+      container.innerHTML = `
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          ${sections.map((s, i) => {
+            const c = ACCENT_COLORS[i % ACCENT_COLORS.length];
+            const memberCount = s.student_count ?? s.member_count ?? '—';
+            const groupCount  = s.group_count ?? '—';
+            return `
+              <button
+                onclick="window._dashGoToSection(${s.id}, '${(s.name||'').replace(/'/g,"\\'")}', ${s.id})"
+                class="group text-left w-full bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="w-10 h-10 rounded-xl ${c.light} flex items-center justify-center">
+                    <span class="material-symbols-outlined ${c.icon}" style="font-variation-settings:'FILL' 1">class</span>
+                  </div>
+                  <span class="material-symbols-outlined text-slate-300 group-hover:text-slate-500 transition-colors text-lg">arrow_forward</span>
+                </div>
+                <p class="font-bold text-slate-900 text-base leading-snug">${s.name}</p>
+                <p class="text-xs text-slate-500 mt-0.5">${s.semester || ''} ${s.school_year || ''}</p>
+                <div class="mt-4 flex items-center gap-3">
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold ${c.light} ${c.text} px-2.5 py-1 rounded-full">
+                    <span class="material-symbols-outlined text-sm">person</span>${memberCount} students
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">
+                    <span class="material-symbols-outlined text-sm">group_work</span>${groupCount} groups
+                  </span>
+                </div>
+              </button>`;
+          }).join('')}
+        </div>
+        ${data.sections.length > 4 ? `
+          <div class="mt-4 text-center">
+            <button hx-get="/partials/records" hx-target="#page-body" hx-push-url="true"
+                    class="text-sm font-semibold text-blue-700 hover:underline">
+              +${data.sections.length - 4} more section${data.sections.length - 4 !== 1 ? 's' : ''} — View all in Records →
+            </button>
+          </div>` : ''}`;
+      htmx.process(container);
+    } catch (e) {
+      const container2 = document.getElementById('dash-sections');
+      if (container2) container2.innerHTML = `<p class="text-sm text-red-500 p-4">Failed to load sections: ${e.message}</p>`;
+    }
+  }
+
+  // Navigate to Records and then drill into that section
+  window._dashGoToSection = function(sectionId, sectionName) {
+    const pageBody = document.getElementById('page-body');
+    if (!pageBody) return;
+
+    const afterSwap = function(e) {
+      if (e.detail.target.id === 'page-body') {
+        document.body.removeEventListener('htmx:afterSwap', afterSwap);
+        setTimeout(() => {
+          if (typeof window.loadSectionDetail === 'function') {
+            window.loadSectionDetail(sectionId, sectionName);
+          }
+        }, 80);
+      }
+    };
+    document.body.addEventListener('htmx:afterSwap', afterSwap);
+    htmx.ajax('GET', '/partials/records', { target: '#page-body', swap: 'innerHTML' });
+    history.pushState({}, '', '/records');
+  };
+
+  loadDashSections();
+})();
+</script>
