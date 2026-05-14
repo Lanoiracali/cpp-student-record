@@ -619,18 +619,22 @@ app.get('/login/student/email', (req, res) => {
 // POST /login/student/email — Handle student email+password authentication
 app.post('/login/student/email', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
     if (!email || !password) {
       return res.status(400).json({ success: false, error: 'Email and password are required' });
     }
 
-    const result = await flaskRequest('POST', '/api/v1/student/login', { email, password });
+    const result = await flaskRequest('POST', '/api/v1/student/login', { email, password, remember });
 
     if (!result.body || !result.body.success) {
       return res.status(result.status || 401).json({
         success: false,
         error: (result.body && result.body.error) || 'Invalid email or password',
       });
+    }
+
+    if (result.body.token) {
+      res.cookie('remember_token', result.body.token, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
     }
 
     const student = result.body.student;
@@ -676,7 +680,8 @@ app.get('/student', requireStudentAuth, (req, res) => {
 // GET /api/student/me — logged-in student's own data + records
 app.get('/api/student/me', requireStudentAuth, async (req, res) => {
   try {
-    const result = await flaskGet(`/api/v1/students/${req.session.studentId}/me`);
+    const targetStudentId = req.query.enrollment_id || req.session.studentId;
+    const result = await flaskGet(`/api/v1/users/${req.session.userId}/student_dashboard?enrollment_id=${targetStudentId}`);
     res.status(result.status).json(result.body);
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
@@ -712,11 +717,11 @@ app.post('/auth/logout', async (req, res) => {
     }
     
     if (req.get('HX-Request') === 'true') {
-      res.setHeader('HX-Redirect', '/login');
+      res.setHeader('HX-Redirect', '/');
       return res.status(200).send('');
     }
     
-    res.redirect('/login');
+    res.redirect('/');
   });
 });
 
@@ -1050,7 +1055,7 @@ app.delete('/api/records/:id', requireAuth, async (req, res) => {
 
 function listen(port) {
   const server = app.listen(port, () => {
-    console.log(`Registrar Pro running at http://localhost:${port}`);
+    console.log(`CPP v0.6 running at http://localhost:${port}`);
   });
 
   server.on('error', (error) => {

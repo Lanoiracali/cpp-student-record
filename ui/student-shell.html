@@ -69,13 +69,19 @@
 (function() {
   const STUDENT_ID = {{STUDENT_ID}};
 
-  async function loadCard() {
+  // Make switchEnrollment global so inline onchange can call it
+  window.switchEnrollment = function(e) {
+    loadCard(e.target.value);
+  };
+
+  async function loadCard(enrollmentId = null) {
     const root = document.getElementById('card-root');
     try {
-      const res = await fetch('/api/student/me');
+      const url = enrollmentId ? `/api/student/me?enrollment_id=${enrollmentId}` : '/api/student/me';
+      const res = await fetch(url);
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Failed to load');
-      renderCard(data.student, data.records || []);
+      renderCard(data.student, data.records || [], data.enrollments || []);
     } catch(e) {
       root.innerHTML = `<div class="text-center py-24 text-red-500 space-y-2">
         <span class="material-symbols-outlined text-5xl block">error</span>
@@ -85,7 +91,7 @@
     }
   }
 
-  function renderCard(s, records) {
+  function renderCard(s, records, enrollments) {
     const initials = (s.first_name?.[0] || '') + (s.surname?.[0] || '');
     const fullName = `${s.surname}, ${s.first_name}${s.middle_initial ? ' ' + s.middle_initial + '.' : ''}`;
     const root = document.getElementById('card-root');
@@ -94,8 +100,18 @@
     document.getElementById('nav-initials').textContent = initials.toUpperCase();
     document.getElementById('nav-name').textContent = s.first_name + ' ' + s.surname;
 
+    const selectorHtml = enrollments && enrollments.length > 1 ? `
+      <div class="mb-2">
+        <label for="enrollment-selector" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">View Records For</label>
+        <select id="enrollment-selector" onchange="window.switchEnrollment(event)" class="w-full sm:max-w-md bg-white border border-slate-300 text-slate-800 text-sm font-medium rounded-xl focus:ring-blue-500 focus:border-blue-500 block px-3 py-2.5 shadow-sm transition-shadow">
+          ${enrollments.map(e => `<option value="${e.student_id}" ${e.student_id === s.id ? 'selected' : ''}>${e.section_name} — ${e.teacher_name} (Group ${e.group_number})</option>`).join('')}
+        </select>
+      </div>
+    ` : '';
+
     root.innerHTML = `
     <div class="animate-fade-up space-y-5">
+      ${selectorHtml}
 
       <!-- Index Card -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
