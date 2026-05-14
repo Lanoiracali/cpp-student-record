@@ -129,8 +129,8 @@
       <!-- Form panel -->
       <div id="grp-panel-form" style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Group Number</label><input id="add-group-num" type="number" placeholder="e.g. 5" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" min="1" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
-          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Group Name</label><input id="add-group-name" type="text" placeholder="e.g. Team Alpha" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Group Number</label><input id="add-group-num" type="number" placeholder="e.g. 5" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" min="1" max="255" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Group Name</label><input id="add-group-name" type="text" placeholder="e.g. Team Alpha" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" maxlength="25" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
         </div>
         <div id="add-group-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
           <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
@@ -185,9 +185,32 @@
         </button>
       </div>
       <div style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
-        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Student Number</label><input id="add-mem-num" type="text" placeholder="e.g. 2021-12345" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
-        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Full Name</label><input id="add-mem-name" type="text" placeholder="e.g. Juan Dela Cruz" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
-        <div style="display:flex; flex-direction:column; gap:0.35rem;"><label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Email</label><input id="add-mem-email" type="email" placeholder="student@example.com" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;"  onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/></div>
+        <div style="display:flex; flex-direction:column; gap:0.35rem;">
+          <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Student Number</label>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <input id="add-mem-num-1" type="text" maxlength="2" placeholder="XX" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.5rem; font-size:0.875rem; text-align:center; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:3.5rem; box-sizing:border-box; background:#fff;" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length === 2) document.getElementById('add-mem-num-2').focus();"/>
+            <span style="font-weight:bold; color:#64748b;">-</span>
+            <input id="add-mem-num-2" type="text" maxlength="4" placeholder="XXXX" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 0.5fr; gap:0.75rem;">
+          <div style="display:flex; flex-direction:column; gap:0.35rem;">
+            <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Last Name</label>
+            <input id="add-mem-last" type="text" maxlength="25" placeholder="Santos" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s; width:100%; box-sizing:border-box; background:#fff;" onfocus="this.style.borderColor='#1e40af';" onblur="this.style.borderColor='#e2e8f0';"/>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;">
+            <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">First Name</label>
+            <input id="add-mem-first" type="text" maxlength="25" placeholder="Maria" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s; width:100%; box-sizing:border-box; background:#fff;" onfocus="this.style.borderColor='#1e40af';" onblur="this.style.borderColor='#e2e8f0';"/>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;">
+            <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">M.I.</label>
+            <input id="add-mem-mi" type="text" maxlength="5" placeholder="A." style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.5rem; font-size:0.875rem; text-align:center; font-family:inherit; outline:none; transition:border-color 0.15s; width:100%; box-sizing:border-box; background:#fff;" onfocus="this.style.borderColor='#1e40af';" onblur="this.style.borderColor='#e2e8f0';"/>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.35rem;">
+          <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; display:block; margin-bottom:0.3rem;">Email</label>
+          <input id="add-mem-email" type="email" placeholder="student@plv.edu.ph" maxlength="25" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; box-sizing:border-box; background:#fff;" onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
+        </div>
         <div id="add-mem-error" style="display:none; font-size:0.8rem; color:#b91c1c; font-weight:600; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem; align-items:center; gap:0.5rem;">
           <span class="material-symbols-outlined" style="font-size:1rem; flex-shrink:0;">error</span>
           <span id="add-mem-error-text"></span>
@@ -695,7 +718,7 @@
     window.__addMemberGroupId    = groupId;
     window.__addMemberSectionId  = sectionId;
     window.__addMemberSectionName = sectionName;
-    ['#add-mem-num','#add-mem-name','#add-mem-email'].forEach(function(s) {
+    ['#add-mem-num-1','#add-mem-num-2','#add-mem-last','#add-mem-first','#add-mem-mi','#add-mem-email'].forEach(function(s) {
       var el = qs(s); if(el) el.value = '';
     });
     var errEl = qs('#add-mem-error');
@@ -710,20 +733,31 @@
   });
 
   on('#btn-add-member-submit', 'click', async function() {
-    const num   = qs('#add-mem-num').value.trim();
-    const full  = qs('#add-mem-name').value.trim();
-    const email = qs('#add-mem-email').value.trim();
-    const errEl = qs('#add-mem-error');
-    const errTx = qs('#add-mem-error-text');
-    if (!num || !full || !email) {
-      errTx.textContent = 'Student #, Full Name and Email are required.';
+    const num1   = qs('#add-mem-num-1').value.trim();
+    const num2   = qs('#add-mem-num-2').value.trim();
+    const last   = qs('#add-mem-last').value.trim();
+    const first  = qs('#add-mem-first').value.trim();
+    const mi     = qs('#add-mem-mi').value.trim();
+    const email  = qs('#add-mem-email').value.trim();
+    const errEl  = qs('#add-mem-error');
+    const errTx  = qs('#add-mem-error-text');
+
+    if (!num1 || !num2 || !last || !first || !email) {
+      errTx.textContent = 'All fields except M.I. are required.';
       errEl.style.display = 'flex'; return;
     }
-    // Parse "Firstname [Middlename] Surname" -> last word = surname
-    var parts = full.trim().split(/\s+/);
-    var surname = parts.pop();
-    var mi = parts.length > 1 ? parts.pop() : '';
-    var first_name = parts.length ? parts.join(' ') : surname;
+
+    if (email.length > 25) {
+      errTx.textContent = 'Email exceeds 25 characters.';
+      errEl.style.display = 'flex'; return;
+    }
+
+    if (!email.endsWith('@plv.edu.ph')) {
+      errTx.textContent = 'Email must end with @plv.edu.ph';
+      errEl.style.display = 'flex'; return;
+    }
+
+    const num = num1 + '-' + num2;
     errEl.style.display = 'none';
     const btn = qs('#btn-add-member-submit');
     const orig = btn.textContent;
@@ -731,7 +765,7 @@
     try {
       const res = await fetch('/api/groups/' + window.__addMemberGroupId + '/students', {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ student_number: num, surname: surname, first_name: first_name, middle_initial: mi, email: email })
+        body: JSON.stringify({ student_number: num, surname: last, first_name: first, middle_initial: mi, email: email })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);

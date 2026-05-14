@@ -217,7 +217,7 @@
               </div>
               <div style="display:flex; flex-direction:column; gap:0.35rem;">
                 <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Type</label>
-                <input id="rec-type" type="text" placeholder="Quiz, Lab, Exam…" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+                <input id="rec-type" type="text" maxlength="25" placeholder="Quiz, Lab, Exam…" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
                        onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
               </div>
             </div>
@@ -237,7 +237,7 @@
 
             <div style="display:flex; flex-direction:column; gap:0.35rem;">
               <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b;">Remarks <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#94a3b8;">(optional)</span></label>
-              <input id="rec-remarks" type="text" placeholder="Notes, observations…" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
+              <input id="rec-remarks" type="text" maxlength="25" placeholder="Notes, observations…" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; font-size:0.875rem; font-family:inherit; outline:none; transition:border-color 0.15s, box-shadow 0.15s; width:100%; box-sizing:border-box;"
                      onfocus="this.style.borderColor='#1e40af'; this.style.boxShadow='0 0 0 3px rgba(30,64,175,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';"/>
             </div>
 
@@ -367,6 +367,10 @@
       var btn = document.getElementById('rec-save-btn');
       if (!body.date || !body.type_of_undertaking || body.score === '') {
         showErr('Date, type, and score are required.');
+        return;
+      }
+      if (Number(body.score) > (Number(body.total_score) || 0)) {
+        showErr('Score must be below or equal to total score.');
         return;
       }
       hideErr();

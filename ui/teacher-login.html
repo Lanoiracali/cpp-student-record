@@ -179,13 +179,23 @@
             hx-swap="innerHTML">
         <input name="role" type="hidden" value="teacher"/>
 
-        <!-- Full Name -->
+        <!-- First Name -->
         <div class="flex flex-col gap-sm">
-          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="full_name">Full Name</label>
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="first_name">First Name</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">person</span>
             <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
-                   id="full_name" name="full_name" placeholder="Maria Santos" type="text" required autocomplete="name"/>
+                   id="first_name" name="first_name" placeholder="Maria" type="text" maxlength="20" required autocomplete="given-name"/>
+          </div>
+        </div>
+
+        <!-- Last Name -->
+        <div class="flex flex-col gap-sm">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="last_name">Last Name</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">person</span>
+            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="last_name" name="last_name" placeholder="Santos" type="text" maxlength="20" required autocomplete="family-name"/>
           </div>
         </div>
 
@@ -195,7 +205,7 @@
           <div class="relative">
             <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">mail</span>
             <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
-                   id="reg-email" name="email" placeholder="teacher@cpp.edu" type="email" required autocomplete="email"/>
+                   id="reg-email" name="email" placeholder="teacher@plv.edu.ph" type="email" maxlength="50" pattern=".*@plv\.edu\.ph$" title="Must be a @plv.edu.ph email address" required autocomplete="email"/>
           </div>
         </div>
 
@@ -204,8 +214,11 @@
           <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="reg-password">Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">lock</span>
-            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
-                   id="reg-password" name="password" placeholder="Create a password" type="password" required autocomplete="new-password"/>
+            <input class="w-full h-[48px] pl-11 pr-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="reg-password" name="password" placeholder="Create a password" type="password" maxlength="25" required autocomplete="new-password"/>
+            <button type="button" tabindex="-1" class="absolute right-md top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" onclick="const input = document.getElementById('reg-password'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+              <span class="material-symbols-outlined text-xl">visibility</span>
+            </button>
           </div>
         </div>
 
@@ -214,8 +227,11 @@
           <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="confirm-password">Confirm Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">lock_reset</span>
-            <input class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
-                   id="confirm-password" name="password_confirm" placeholder="Repeat your password" type="password" required autocomplete="new-password"/>
+            <input class="w-full h-[48px] pl-11 pr-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                   id="confirm-password" name="password_confirm" placeholder="Repeat your password" type="password" maxlength="25" required autocomplete="new-password"/>
+            <button type="button" tabindex="-1" class="absolute right-md top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" onclick="const input = document.getElementById('confirm-password'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+              <span class="material-symbols-outlined text-xl">visibility</span>
+            </button>
           </div>
         </div>
 

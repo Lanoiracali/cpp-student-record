@@ -229,9 +229,11 @@ async function requireAuth(req, res, next) {
       if (backendResult.statusCode === 200 && backendResult.body && backendResult.body.success) {
         const user = backendResult.body.user;
         req.session.userId = user.id;
+        req.session.studentId = user.studentId || user.student_id;
         req.session.sessionToken = generateSessionToken();
         req.session.user = {
           id: user.id,
+          studentId: user.studentId || user.student_id,
           studId: user.studId || user.stud_id,
           firstName: user.firstName || user.first_name,
           lastName: user.lastName || user.last_name,
@@ -394,17 +396,24 @@ app.get(['/register', '/auth/register'], redirectIfAuth, (req, res) => {
   res.send(renderAuthPage('register.html', req.query.error));
 });
 
-// POST /register/teacher - Handle teacher registration (full_name + email)
+// POST /register/teacher - Handle teacher registration (split names)
 app.post(['/register/teacher'], async (req, res) => {
   try {
-    const fullName = getField(req.body, ['full_name', 'fullName']);
+    const firstName = getField(req.body, ['first_name']);
+    const lastName = getField(req.body, ['last_name']);
     const email = getField(req.body, ['email']);
     const password = getField(req.body, ['password']);
     const passwordConfirm = getField(req.body, ['password_confirm', 'passwordConfirm']);
 
-    if (!fullName || !email || !password) {
-      return sendFormError(req, res, '/register/teacher', 'Full name, email, and password are required');
+    if (!firstName || !lastName || !email || !password) {
+      return sendFormError(req, res, '/register/teacher', 'First name, last name, email, and password are required');
     }
+
+    if (!email.endsWith('@plv.edu.ph')) {
+      return sendFormError(req, res, '/register/teacher', 'Email must be a @plv.edu.ph address');
+    }
+
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
     if (passwordConfirm && passwordConfirm !== password) {
       return sendFormError(req, res, '/register/teacher', 'Passwords do not match');
@@ -538,8 +547,15 @@ function getMailTransport() {
 
 // GET /login/student
 app.get('/login/student', (req, res) => {
-  if (req.session.userId && req.session.studentId) return res.redirect('/student');
-  if (req.session.userId) return res.redirect('/dashboard');
+  if (req.session.userId) {
+    if (req.session.user && req.session.user.isTeacher === false) {
+      // If studentId is missing, don't redirect to /student (which would redirect back here)
+      // Instead, just show the login page or try to fix the session
+      if (req.session.studentId) return res.redirect('/student');
+    } else {
+      return res.redirect('/dashboard');
+    }
+  }
   res.sendFile(path.join(uiDir, 'student-login.html'));
 });
 
@@ -611,8 +627,13 @@ app.post('/login/student/set-password', async (req, res) => {
 
 // GET /login/student/email — Student email+password login page (already-activated accounts)
 app.get('/login/student/email', (req, res) => {
-  if (req.session.userId && req.session.studentId) return res.redirect('/student');
-  if (req.session.userId) return res.redirect('/dashboard');
+  if (req.session.userId) {
+    if (req.session.user && req.session.user.isTeacher === false) {
+      if (req.session.studentId) return res.redirect('/student');
+    } else {
+      return res.redirect('/dashboard');
+    }
+  }
   res.sendFile(path.join(uiDir, 'student-email-login.html'));
 });
 
@@ -659,38 +680,7 @@ app.post('/login/student/email', async (req, res) => {
 });
 
 
-app.post('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/'));
-});
-
-// ── STUDENT PORTAL ───────────────────────────────────────────────────────────
-
-function requireStudentAuth(req, res, next) {
-  if (req.session.userId && req.session.studentId) return next();
-  res.redirect('/login/student');
-}
-
-// GET /student — student read-only shell
-app.get('/student', requireStudentAuth, (req, res) => {
-  const html = fs.readFileSync(path.join(uiDir, 'student-shell.html'), 'utf8')
-    .replace('{{STUDENT_ID}}', req.session.studentId);
-  res.send(html);
-});
-
-// GET /api/student/me — logged-in student's own data + records
-app.get('/api/student/me', requireStudentAuth, async (req, res) => {
-  try {
-    const targetStudentId = req.query.enrollment_id || req.session.studentId;
-    const result = await flaskGet(`/api/v1/users/${req.session.userId}/student_dashboard?enrollment_id=${targetStudentId}`);
-    res.status(result.status).json(result.body);
-  } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-// POST /auth/logout - Handle logout (existing)
-
-app.post('/auth/logout', async (req, res) => {
+const handleLogout = async (req, res) => {
   let rememberToken = null;
   if (req.headers.cookie) {
     const cookies = req.headers.cookie.split(';').map(c => c.trim());
@@ -723,7 +713,36 @@ app.post('/auth/logout', async (req, res) => {
     
     res.redirect('/');
   });
+};
+
+app.post(['/logout', '/auth/logout'], handleLogout);
+
+// ── STUDENT PORTAL ───────────────────────────────────────────────────────────
+
+function requireStudentAuth(req, res, next) {
+  if (req.session.userId && req.session.studentId) return next();
+  res.redirect('/login/student');
+}
+
+// GET /student — student read-only shell
+app.get('/student', requireStudentAuth, (req, res) => {
+  const html = fs.readFileSync(path.join(uiDir, 'student-shell.html'), 'utf8')
+    .replace('{{STUDENT_ID}}', req.session.studentId);
+  res.send(html);
 });
+
+// GET /api/student/me — logged-in student's own data + records
+app.get('/api/student/me', requireStudentAuth, async (req, res) => {
+  try {
+    const targetStudentId = req.query.enrollment_id || req.session.studentId;
+    const result = await flaskGet(`/api/v1/users/${req.session.userId}/student_dashboard?enrollment_id=${targetStudentId}`);
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// (handleLogout consolidated above)
 
 // ============= APP ROUTES =============
 
@@ -731,16 +750,25 @@ app.post('/auth/logout', async (req, res) => {
 
 // GET /dashboard - Main app shell (requires auth)
 app.get(['/dashboard', '/app'], requireAuth, (req, res) => {
+  if (req.session.user && !req.session.user.isTeacher) {
+    return res.redirect('/student');
+  }
   res.send(renderShell('dashboard'));
 });
 
 // GET /records - Main app shell with records view (requires auth)
 app.get('/records', requireAuth, (req, res) => {
+  if (req.session.user && !req.session.user.isTeacher) {
+    return res.redirect('/student');
+  }
   res.send(renderShell('records'));
 });
 
 // GET /students - Main app shell with students view (requires auth)
 app.get('/students', requireAuth, (req, res) => {
+  if (req.session.user && !req.session.user.isTeacher) {
+    return res.redirect('/student');
+  }
   res.send(renderShell('students'));
 });
 
