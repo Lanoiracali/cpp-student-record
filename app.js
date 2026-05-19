@@ -639,12 +639,19 @@ app.post(['/register', '/auth/register'], async (req, res) => {
 
 const nodemailer = require('nodemailer');
 
+function isSmtpConfigured() {
+  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
 function getMailTransport() {
   return nodemailer.createTransport({
     host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
     port:   Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: process.env.SMTP_USER || '', pass: process.env.SMTP_PASS || '' },
+    auth: {
+      user: process.env.SMTP_USER || '',
+      pass: String(process.env.SMTP_PASS || '').replace(/\s+/g, ''),
+    },
   });
 }
 
@@ -670,8 +677,18 @@ app.post('/login/student/request', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.json({ success: false, error: 'Email is required' });
+
+    if (process.env.NODE_ENV === 'production' && !isSmtpConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Email service is not configured. Set SMTP_USER and SMTP_PASS in your Render environment variables.',
+      });
+    }
+
     const result = await flaskRequest('POST', '/api/v1/student/request-temp', { email });
-    if (!result.body.success) return res.status(result.status).json(result.body);
+    if (!result.body || !result.body.success) {
+      return res.status(result.status || 500).json(result.body || { success: false, error: 'Unable to request login code' });
+    }
     const { temp_password, student_name } = result.body;
     try {
       const transport = getMailTransport();
@@ -693,6 +710,12 @@ app.post('/login/student/request', async (req, res) => {
       });
     } catch (mailErr) {
       console.warn('[SMTP] Email not sent:', mailErr.message);
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({
+          success: false,
+          error: 'Could not send your login code email. Check SMTP settings on Render or try again later.',
+        });
+      }
       console.log('[DEV] Temp password for', email, '=', temp_password);
     }
     res.json({ success: true, message: 'Code sent. Check your email.' });
@@ -704,8 +727,16 @@ app.post('/login/student/request', async (req, res) => {
 // POST /login/student/verify — Step 2: verify code
 app.post('/login/student/verify', async (req, res) => {
   try {
-    const result = await flaskRequest('POST', '/api/v1/student/verify-temp', req.body);
-    res.status(result.status).json(result.body);
+    const email = String(req.body?.email || '').trim();
+    const tempPassword = String(req.body?.temp_password || '').trim().toUpperCase();
+    if (!email || !tempPassword) {
+      return res.status(400).json({ success: false, error: 'Email and temporary code are required' });
+    }
+    const result = await flaskRequest('POST', '/api/v1/student/verify-temp', {
+      email,
+      temp_password: tempPassword,
+    });
+    res.status(result.status || 500).json(result.body || { success: false, error: 'Verification failed' });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
@@ -715,8 +746,13 @@ app.post('/login/student/verify', async (req, res) => {
 app.post('/login/student/set-password', async (req, res) => {
   try {
     const result = await flaskRequest('POST', '/api/v1/student/set-password', req.body);
-    if (!result.body.success) return res.status(result.status).json(result.body);
+    if (!result.body || !result.body.success) {
+      return res.status(result.status || 500).json(result.body || { success: false, error: 'Failed to activate account' });
+    }
     const student = result.body.student;
+    if (!student?.user_id) {
+      return res.status(500).json({ success: false, error: 'Account activated but session could not be created. Contact your teacher.' });
+    }
     req.session.userId = student.user_id;
     req.session.studentId = student.id;
     req.session.sessionToken = generateSessionToken();
@@ -1081,8 +1117,15 @@ async function flaskRequest(method, path, body, headers = {}) {
       let data = '';
       resp.on('data', c => data += c);
       resp.on('end', () => {
-        try { resolve({ status: resp.statusCode, body: JSON.parse(data) }); }
-        catch (e) { reject(e); }
+        let body = null;
+        if (data) {
+          try {
+            body = JSON.parse(data);
+          } catch (e) {
+            body = { success: false, error: data.slice(0, 200) || 'Invalid response from API server' };
+          }
+        }
+        resolve({ status: resp.statusCode, body });
       });
     });
     req.on('error', reject);
