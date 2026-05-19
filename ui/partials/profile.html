@@ -105,14 +105,14 @@
               <label for="input-first-name" class="text-xs font-bold text-slate-700 ml-1">First Name</label>
               <div class="relative group">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-indigo-600 transition-colors">person</span>
-                <input type="text" id="input-first-name" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. Jane">
+                <input type="text" id="input-first-name" maxlength="25" oninput="this.value=this.value.slice(0,25)" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. Jane">
               </div>
             </div>
             <div class="space-y-2">
               <label for="input-last-name" class="text-xs font-bold text-slate-700 ml-1">Last Name</label>
               <div class="relative group">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-indigo-600 transition-colors">person</span>
-                <input type="text" id="input-last-name" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. Doe">
+                <input type="text" id="input-last-name" maxlength="20" oninput="this.value=this.value.slice(0,20)" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. Doe">
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@
             <label for="input-email" class="text-xs font-bold text-slate-700 ml-1">Email Address</label>
             <div class="relative group">
               <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-indigo-600 transition-colors">mail</span>
-              <input type="email" id="input-email" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. jane.doe@example.com">
+              <input type="email" id="input-email" maxlength="50" oninput="this.value=this.value.slice(0,50)" pattern=".*@plv\.edu\.ph$" title="Must end with @plv.edu.ph" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. jane.doe@plv.edu.ph">
             </div>
           </div>
           
@@ -384,6 +384,15 @@
         btnSaveProfile.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> <span>Saving...</span>`;
         
         try {
+          if (!/@plv\.edu\.ph$/i.test(email)) {
+            throw new Error('Email must end with @plv.edu.ph');
+          }
+          if (firstName.length > 25) {
+            throw new Error('First name must be 25 characters or fewer');
+          }
+          if (lastName.length > 20) {
+            throw new Error('Last name must be 20 characters or fewer');
+          }
           const upRes = await fetch('/api/profile', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

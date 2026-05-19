@@ -276,7 +276,7 @@
               <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">mail</span>
               <input
                 class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
-                id="email" name="email" placeholder="teacher@cpp.edu" type="email" required autocomplete="email" />
+                id="email" name="email" placeholder="teacher@plv.edu.ph" type="email" maxlength="50" pattern=".*@plv\.edu\.ph$" title="Must end with @plv.edu.ph" required autocomplete="email" oninput="this.value=this.value.slice(0,50)" />
             </div>
           </div>
 

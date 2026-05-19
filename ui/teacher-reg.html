@@ -156,7 +156,7 @@
 <div class="space-y-sm">
 <label class="font-label-md text-label-md text-on-surface-variant" for="email">Email Address</label>
 <div class="relative">
-<input class="w-full px-md py-sm rounded border border-outline-variant bg-white text-on-surface focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md transition-all outline-none" id="email" name="email" pattern=".+\.edu$" placeholder="teacher@university.edu" required="" type="email"/>
+<input class="w-full px-md py-sm rounded border border-outline-variant bg-white text-on-surface focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md transition-all outline-none" id="email" name="email" pattern=".*@plv\.edu\.ph$" placeholder="teacher@plv.edu.ph" required="" type="email" maxlength="50" title="Must end with @plv.edu.ph" oninput="this.value=this.value.slice(0,50)"/>
 <div class="absolute inset-y-0 right-0 pr-md flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-outline text-xl" data-icon="mail">mail</span>
 </div>

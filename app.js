@@ -411,13 +411,18 @@ async function handleTeacherLogin(req, res) {
 
   try {
     const { email, password } = req.body;
+    const normalizedEmail = String(email || '').trim().slice(0, 50).toLowerCase();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return sendFormError(req, res, '/login/teacher', 'Email and password are required');
     }
 
+    if (!normalizedEmail.endsWith('@plv.edu.ph')) {
+      return sendFormError(req, res, '/login/teacher', 'Teacher email must end with @plv.edu.ph');
+    }
+
     const loginPayload = {
-      email,
+      email: normalizedEmail,
       password,
       remember: req.body.remember === 'on' || req.body.remember === true || req.body.remember === 'true'
     };
@@ -505,14 +510,15 @@ app.post(['/register/teacher'], async (req, res) => {
     const firstName = getField(req.body, ['first_name']);
     const lastName = getField(req.body, ['last_name']);
     const email = getField(req.body, ['email']);
+    const normalizedEmail = email.toLowerCase();
     const password = getField(req.body, ['password']);
     const passwordConfirm = getField(req.body, ['password_confirm', 'passwordConfirm']);
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !normalizedEmail || !password) {
       return sendFormError(req, res, '/register/teacher', 'First name, last name, email, and password are required');
     }
 
-    if (!email.endsWith('@plv.edu.ph')) {
+    if (!normalizedEmail.endsWith('@plv.edu.ph')) {
       return sendFormError(req, res, '/register/teacher', 'Email must be a @plv.edu.ph address');
     }
 
@@ -525,7 +531,7 @@ app.post(['/register/teacher'], async (req, res) => {
     const registrationPayload = {
       role: 'teacher',
       full_name: fullName,
-      email,
+      email: normalizedEmail,
       password,
     };
 
@@ -546,7 +552,7 @@ app.post(['/register/teacher'], async (req, res) => {
       fullName: createdUser.fullName || createdUser.full_name || fullName,
       firstName: createdUser.firstName || createdUser.first_name || fullName.split(' ')[0],
       lastName: createdUser.lastName || createdUser.last_name || '',
-      email: createdUser.email || email,
+      email: createdUser.email || normalizedEmail,
       isTeacher: true
     };
 
@@ -677,6 +683,52 @@ function getMailTransport() {
   });
 }
 
+async function sendTempCodeEmail(to, studentName, tempPassword) {
+  const cfg = getSmtpConfig();
+  const transports = [
+    getMailTransport(),
+  ];
+
+  // Gmail usually works on either STARTTLS (587) or implicit TLS (465).
+  // If the Render network path rejects one mode, try the other before failing.
+  if (cfg.port !== 465) {
+    transports.push(nodemailer.createTransport({
+      host: cfg.host,
+      port: 465,
+      secure: true,
+      auth: { user: cfg.user, pass: cfg.pass },
+      tls: { minVersion: 'TLSv1.2' },
+    }));
+  }
+
+  let lastError = null;
+  for (const transport of transports) {
+    try {
+      await transport.sendMail({
+        from: `"CPP Portal" <${cfg.from}>`,
+        to,
+        subject: 'Your CPP Portal Temporary Login Code',
+        html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;">
+          <div style="background:linear-gradient(135deg,#00236f,#004942);padding:28px;border-radius:12px 12px 0 0;">
+            <h1 style="color:#fff;font-size:20px;margin:0;">CPP Portal</h1>
+          </div>
+          <div style="background:#f7f9fb;padding:24px;border-radius:0 0 12px 12px;">
+            <p style="color:#1e293b;">Hi <strong>${studentName}</strong>,</p>
+            <p style="color:#475569;font-size:14px;">Your temporary login code:</p>
+            <div style="background:#00236f;color:#fff;font-family:monospace;font-size:24px;font-weight:900;
+                        letter-spacing:0.2em;text-align:center;padding:18px;border-radius:10px;margin:16px 0;">${tempPassword}</div>
+            <p style="color:#64748b;font-size:13px;">Enter this on the login page then create your permanent password.</p>
+          </div></div>`,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('SMTP send failed');
+}
+
 // GET /login/student
 app.get('/login/student', async (req, res) => {
   if (req.session.userId) {
@@ -697,8 +749,11 @@ app.get('/login/student', async (req, res) => {
 // POST /login/student/request — Step 1: look up temp password & email it
 app.post('/login/student/request', async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = String(req.body?.email || '').trim().slice(0, 50).toLowerCase();
     if (!email) return res.json({ success: false, error: 'Email is required' });
+    if (!email.endsWith('@plv.edu.ph')) {
+      return res.status(400).json({ success: false, error: 'Email must end with @plv.edu.ph' });
+    }
 
     if (process.env.NODE_ENV === 'production' && !isSmtpConfigured()) {
       return res.status(503).json({
@@ -713,25 +768,7 @@ app.post('/login/student/request', async (req, res) => {
     }
     const { temp_password, student_name } = result.body;
     try {
-      const transport = getMailTransport();
-      const smtp = getSmtpConfig();
-      await transport.verify();
-      await transport.sendMail({
-        from: `"CPP Portal" <${smtp.from}>`,
-        to: email,
-        subject: 'Your CPP Portal Temporary Login Code',
-        html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;">
-          <div style="background:linear-gradient(135deg,#00236f,#004942);padding:28px;border-radius:12px 12px 0 0;">
-            <h1 style="color:#fff;font-size:20px;margin:0;">CPP Portal</h1>
-          </div>
-          <div style="background:#f7f9fb;padding:24px;border-radius:0 0 12px 12px;">
-            <p style="color:#1e293b;">Hi <strong>${student_name}</strong>,</p>
-            <p style="color:#475569;font-size:14px;">Your temporary login code:</p>
-            <div style="background:#00236f;color:#fff;font-family:monospace;font-size:24px;font-weight:900;
-                        letter-spacing:0.2em;text-align:center;padding:18px;border-radius:10px;margin:16px 0;">${temp_password}</div>
-            <p style="color:#64748b;font-size:13px;">Enter this on the login page then create your permanent password.</p>
-          </div></div>`,
-      });
+      await sendTempCodeEmail(email, student_name, temp_password);
     } catch (mailErr) {
       console.warn('[SMTP] Email not sent:', {
         message: mailErr.message,
@@ -761,6 +798,9 @@ app.post('/login/student/verify', async (req, res) => {
     if (!email || !tempPassword) {
       return res.status(400).json({ success: false, error: 'Email and temporary code are required' });
     }
+    if (!email.toLowerCase().endsWith('@plv.edu.ph')) {
+      return res.status(400).json({ success: false, error: 'Email must end with @plv.edu.ph' });
+    }
     const result = await flaskRequest('POST', '/api/v1/student/verify-temp', {
       email,
       temp_password: tempPassword,
@@ -774,6 +814,10 @@ app.post('/login/student/verify', async (req, res) => {
 // POST /login/student/set-password — Step 3: set password + create session
 app.post('/login/student/set-password', async (req, res) => {
   try {
+    const email = String(req.body?.email || '').trim();
+    if (!email || !email.toLowerCase().endsWith('@plv.edu.ph')) {
+      return res.status(400).json({ success: false, error: 'Email must end with @plv.edu.ph' });
+    }
     const result = await flaskRequest('POST', '/api/v1/student/set-password', req.body);
     if (!result.body || !result.body.success) {
       return res.status(result.status || 500).json(result.body || { success: false, error: 'Failed to activate account' });
@@ -821,9 +865,13 @@ app.get('/login/student/email', async (req, res) => {
 // POST /login/student/email — Handle student email+password authentication
 app.post('/login/student/email', async (req, res) => {
   try {
-    const { email, password, remember } = req.body;
+    const email = String(req.body?.email || '').trim().slice(0, 50).toLowerCase();
+    const { password, remember } = req.body;
     if (!email || !password) {
       return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+    if (!email.endsWith('@plv.edu.ph')) {
+      return res.status(400).json({ success: false, error: 'Email must end with @plv.edu.ph' });
     }
 
     const result = await flaskRequest('POST', '/api/v1/student/login', { email, password, remember });
