@@ -241,6 +241,32 @@
       : label;
   }
 
+  async function postJson(url, payload) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    const bodyText = await res.text();
+
+    if (!contentType.includes('application/json')) {
+      const snippet = bodyText.trim().slice(0, 120).replace(/\s+/g, ' ');
+      throw new Error(
+        snippet.startsWith('<!doctype') || snippet.startsWith('<html')
+          ? `Server returned HTML (${res.status}) instead of JSON.`
+          : `Server returned non-JSON response (${res.status}).`
+      );
+    }
+
+    try {
+      return { ok: res.ok, status: res.status, data: JSON.parse(bodyText) };
+    } catch (parseError) {
+      throw new Error(`Invalid JSON from server (${res.status}): ${parseError.message}`);
+    }
+  }
+
   async function requestTemp() {
     clearMsg(1);
     const email = document.getElementById('email-input').value.trim();
@@ -250,12 +276,8 @@
     }
     setLoading('btn-request', true, '');
     try {
-      const res = await fetch('/login/student/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json();
+      const { ok, data } = await postJson('/login/student/request', { email });
+      if (!ok) { showMsg(1, data.error || 'Request failed.', true); return; }
       if (!data.success) { showMsg(1, data.error || 'Request failed.', true); return; }
       pendingEmail = email;
       document.getElementById('display-email').textContent = email;
@@ -273,12 +295,8 @@
     if (!code) { showMsg(2, 'Please enter the temporary code.', true); return; }
     setLoading('btn-verify', true, '');
     try {
-      const res = await fetch('/login/student/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pendingEmail, temp_password: code })
-      });
-      const data = await res.json();
+      const { ok, data } = await postJson('/login/student/verify', { email: pendingEmail, temp_password: code });
+      if (!ok) { showMsg(2, data.error || 'Verification failed.', true); return; }
       if (!data.success) { showMsg(2, data.error || 'Verification failed.', true); return; }
       pendingName = data.first_name || '';
       document.getElementById('display-name').textContent = pendingName;
@@ -298,12 +316,8 @@
     if (pw !== conf) { showMsg(3, 'Passwords do not match.', true); return; }
     setLoading('btn-setpw', true, '');
     try {
-      const res = await fetch('/login/student/set-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pendingEmail, new_password: pw })
-      });
-      const data = await res.json();
+      const { ok, data } = await postJson('/login/student/set-password', { email: pendingEmail, new_password: pw });
+      if (!ok) { showMsg(3, data.error || 'Failed to activate.', true); return; }
       if (!data.success) { showMsg(3, data.error || 'Failed to activate.', true); return; }
       showMsg(3, 'Account activated! Redirecting…', false);
       setTimeout(() => { window.location.href = '/student'; }, 1200);
