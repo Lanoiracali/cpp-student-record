@@ -639,18 +639,40 @@ app.post(['/register', '/auth/register'], async (req, res) => {
 
 const nodemailer = require('nodemailer');
 
+function getSmtpConfig() {
+  const host = String(process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secureEnv = String(process.env.SMTP_SECURE || '').toLowerCase();
+  const secure = secureEnv ? secureEnv === 'true' : port === 465;
+  return {
+    host,
+    port,
+    secure,
+    user: String(process.env.SMTP_USER || '').trim(),
+    // App passwords often get copied with spaces. Normalize to plain token.
+    pass: String(process.env.SMTP_PASS || '').replace(/\s+/g, ''),
+    from: String(process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@cpp.edu').trim(),
+  };
+}
+
 function isSmtpConfigured() {
-  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+  const cfg = getSmtpConfig();
+  return Boolean(cfg.user && cfg.pass);
 }
 
 function getMailTransport() {
+  const cfg = getSmtpConfig();
   return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-    port:   Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === 'true',
+    host: cfg.host,
+    port: cfg.port,
+    secure: cfg.secure,
+    requireTLS: !cfg.secure,
     auth: {
-      user: process.env.SMTP_USER || '',
-      pass: String(process.env.SMTP_PASS || '').replace(/\s+/g, ''),
+      user: cfg.user,
+      pass: cfg.pass,
+    },
+    tls: {
+      minVersion: 'TLSv1.2',
     },
   });
 }
@@ -692,8 +714,10 @@ app.post('/login/student/request', async (req, res) => {
     const { temp_password, student_name } = result.body;
     try {
       const transport = getMailTransport();
+      const smtp = getSmtpConfig();
+      await transport.verify();
       await transport.sendMail({
-        from: `"CPP Portal" <${process.env.SMTP_USER || 'noreply@cpp.edu'}>`,
+        from: `"CPP Portal" <${smtp.from}>`,
         to: email,
         subject: 'Your CPP Portal Temporary Login Code',
         html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;">
@@ -709,7 +733,12 @@ app.post('/login/student/request', async (req, res) => {
           </div></div>`,
       });
     } catch (mailErr) {
-      console.warn('[SMTP] Email not sent:', mailErr.message);
+      console.warn('[SMTP] Email not sent:', {
+        message: mailErr.message,
+        code: mailErr.code,
+        command: mailErr.command,
+        response: mailErr.response,
+      });
       if (process.env.NODE_ENV === 'production') {
         return res.status(503).json({
           success: false,
