@@ -9,11 +9,18 @@ const express = require('express');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const dns = require('dns');
 const crypto = require('crypto');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
 const { URL } = require('url');
+
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (error) {
+  // Older Node versions may not support this API; ignore.
+}
 
 // ── Rate limiting store (in-memory, per IP) ───────────────────────────────────
 const loginAttempts = new Map(); // ip -> { count, lockedUntil }
@@ -674,6 +681,7 @@ function getMailTransport() {
     secure: cfg.secure,
     requireTLS: !cfg.secure,
     family: 4,
+    lookup: (hostname, options, callback) => dns.lookup(hostname, { family: 4, hints: dns.ADDRCONFIG }, callback),
     connectionTimeout: 15000,
     greetingTimeout: 15000,
     socketTimeout: 20000,
@@ -701,6 +709,7 @@ async function sendTempCodeEmail(to, studentName, tempPassword) {
       port: 465,
       secure: true,
       family: 4,
+      lookup: (hostname, options, callback) => dns.lookup(hostname, { family: 4, hints: dns.ADDRCONFIG }, callback),
       connectionTimeout: 15000,
       greetingTimeout: 15000,
       socketTimeout: 20000,
