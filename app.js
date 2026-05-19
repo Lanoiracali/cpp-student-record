@@ -673,6 +673,10 @@ function getMailTransport() {
     port: cfg.port,
     secure: cfg.secure,
     requireTLS: !cfg.secure,
+    family: 4,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
     auth: {
       user: cfg.user,
       pass: cfg.pass,
@@ -696,6 +700,10 @@ async function sendTempCodeEmail(to, studentName, tempPassword) {
       host: cfg.host,
       port: 465,
       secure: true,
+      family: 4,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
       auth: { user: cfg.user, pass: cfg.pass },
       tls: { minVersion: 'TLSv1.2' },
     }));
