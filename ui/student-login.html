@@ -159,7 +159,14 @@
                 class="w-full h-12 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-colors flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-base">verified</span>Verify Code
         </button>
-        <button onclick="goStep(1)" class="w-full text-xs text-slate-400 hover:text-slate-600 transition-colors">← Use a different email</button>
+        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+          <button onclick="goStep(1)" class="text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>Different email
+          </button>
+          <button id="btn-resend" onclick="resendTemp()" class="text-xs text-blue-700 font-semibold hover:text-blue-900 transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">replay</span>Resend Code
+          </button>
+        </div>
       </div>
     </div>
 
@@ -305,6 +312,31 @@
       showMsg(2, 'Network error: ' + e.message, true);
     } finally {
       setLoading('btn-verify', false, '<span class="material-symbols-outlined text-base">verified</span>Verify Code');
+    }
+  }
+
+  async function resendTemp() {
+    clearMsg(2);
+    if (!pendingEmail) {
+      showMsg(2, 'Session expired. Please use a different email.', true);
+      return;
+    }
+    const resendBtn = document.getElementById('btn-resend');
+    const originalHtml = resendBtn.innerHTML;
+    resendBtn.disabled = true;
+    resendBtn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">sync</span>Resending...';
+    try {
+      const { ok, data } = await postJson('/login/student/request', { email: pendingEmail });
+      if (!ok || !data.success) {
+        showMsg(2, data.error || 'Resend failed.', true);
+        return;
+      }
+      showMsg(2, 'A new temporary code has been sent to your email.', false);
+    } catch(e) {
+      showMsg(2, 'Network error: ' + e.message, true);
+    } finally {
+      resendBtn.disabled = false;
+      resendBtn.innerHTML = originalHtml;
     }
   }
 

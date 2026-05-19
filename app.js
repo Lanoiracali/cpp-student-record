@@ -1378,7 +1378,7 @@ app.get('/api/sections', requireAuth, async (req, res) => {
 app.post('/api/sections', requireAuth, async (req, res) => {
   try {
     const teacherId = req.session.user.id;
-    const result = await flaskRequest('POST', '/api/v1/sections', { ...req.body, teacher_id: teacherId });
+    const result = await flaskRequest('POST', '/api/v2/sections', { ...req.body, teacher_id: teacherId });
     res.status(result.status).json(result.body);
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
