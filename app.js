@@ -118,7 +118,15 @@ const rootDir = __dirname;
 const uiDir = path.join(rootDir, 'ui');
 const srcDir = path.join(rootDir, 'src');
 let currentPort = Number(process.env.PORT || 3001);
-const flaskBackendBaseUrl = process.env.FLASK_BACKEND_URL || 'http://127.0.0.1:5000';
+
+function normalizeBackendUrl(url) {
+  const trimmed = String(url || '').trim().replace(/\/$/, '');
+  if (!trimmed) return 'http://127.0.0.1:5000';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+const flaskBackendBaseUrl = normalizeBackendUrl(process.env.FLASK_BACKEND_URL);
 
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
@@ -308,8 +316,8 @@ app.get('/health', async (req, res) => {
     payload.flask = { reachable: false, error: error.message };
   }
 
-  const code = payload.status === 'ok' ? 200 : 503;
-  res.status(code).json(payload);
+  // Always 200 so Render/Railway liveness checks pass; inspect `status` / `flask` for readiness.
+  res.status(200).json(payload);
 });
 
 // Static files
@@ -1135,7 +1143,7 @@ app.post('/api/sections/:id/import', requireAuth, upload.single('file'), async (
     const httpMod = url.protocol === 'https:' ? require('https') : require('http');
     const options = {
       hostname: url.hostname,
-      port: url.port || 80,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: url.pathname,
       method: 'POST',
       headers: form.getHeaders()
