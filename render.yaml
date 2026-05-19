@@ -1,0 +1,30 @@
+# Render Blueprint — CPP web app (Express)
+# Backend (Flask) stays on Railway; set FLASK_BACKEND_URL to that public URL.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: cpp-student-record
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build:css
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FLASK_BACKEND_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
