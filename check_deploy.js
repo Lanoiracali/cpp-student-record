@@ -43,12 +43,14 @@ if (process.env.SESSION_SECRET === 'change-me-in-production'
 }
 
 // Check Email service configuration
-if (process.env.RESEND_API_KEY) {
+if (process.env.SENDGRID_API_KEY) {
+  ok('SENDGRID_API_KEY is set (using SendGrid HTTP API for emails)');
+} else if (process.env.RESEND_API_KEY) {
   ok('RESEND_API_KEY is set (using Resend HTTP API for emails)');
 } else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   ok('SMTP credentials (SMTP_USER/SMTP_PASS) are set (using SMTP for emails)');
 } else {
-  warn('Neither RESEND_API_KEY nor SMTP credentials (SMTP_USER/SMTP_PASS) are set (student email login may not work)');
+  warn('Neither SENDGRID_API_KEY, RESEND_API_KEY, nor SMTP credentials (SMTP_USER/SMTP_PASS) are set (student email login may not work)');
 }
 
 for (const key of recommended) {

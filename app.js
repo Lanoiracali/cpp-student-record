@@ -686,7 +686,7 @@ function isSmtpConfigured() {
 }
 
 function isEmailServiceConfigured() {
-  return Boolean(process.env.RESEND_API_KEY) || isSmtpConfigured();
+  return Boolean(process.env.SENDGRID_API_KEY) || Boolean(process.env.RESEND_API_KEY) || isSmtpConfigured();
 }
 
 function getMailTransport() {
@@ -723,6 +723,47 @@ async function sendTempCodeEmail(to, studentName, tempPassword) {
                   letter-spacing:0.2em;text-align:center;padding:18px;border-radius:10px;margin:16px 0;">${tempPassword}</div>
       <p style="color:#64748b;font-size:13px;">Enter this on the login page then create your permanent password.</p>
     </div></div>`;
+
+  if (process.env.SENDGRID_API_KEY) {
+    const fromEmail = String(process.env.SENDGRID_FROM || process.env.SMTP_FROM || 'plvlanoira07@gmail.com').trim();
+    try {
+      await new Promise((resolve, reject) => {
+        const payload = {
+          personalizations: [{ to: [{ email: to }] }],
+          from: { email: fromEmail, name: 'CPP Portal' },
+          subject: 'Your CPP Portal Temporary Login Code',
+          content: [{ type: 'text/html', value: emailHtml }]
+        };
+        const body = JSON.stringify(payload);
+        const options = {
+          method: 'POST',
+          hostname: 'api.sendgrid.com',
+          port: 443,
+          path: '/v3/mail/send',
+          headers: {
+            'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body)
+          }
+        };
+        const req = https.request(options, (res) => {
+          let resBody = '';
+          res.setEncoding('utf8');
+          res.on('data', chunk => resBody += chunk);
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) resolve();
+            else reject(new Error(`SendGrid returned status ${res.statusCode}: ${resBody}`));
+          });
+        });
+        req.on('error', reject);
+        req.write(body);
+        req.end();
+      });
+      return;
+    } catch (err) {
+      console.warn('[SendGrid] Email failed, falling back:', err.message);
+    }
+  }
 
   if (process.env.RESEND_API_KEY) {
     const fromEmail = String(process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev').trim();
