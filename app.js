@@ -120,6 +120,10 @@ const srcDir = path.join(rootDir, 'src');
 let currentPort = Number(process.env.PORT || 3001);
 const flaskBackendBaseUrl = process.env.FLASK_BACKEND_URL || 'http://127.0.0.1:5000';
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -235,6 +239,10 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Session configuration — persisted in Neon Postgres so logins survive server restarts
 const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key-change-this';
+if (process.env.NODE_ENV === 'production' && sessionSecret === 'your-secret-key-change-this') {
+  console.error('[FATAL] SESSION_SECRET must be set in production');
+  process.exit(1);
+}
 const sessionOptions = {
   secret: sessionSecret,
   resave: false,
@@ -262,6 +270,47 @@ if (process.env.DATABASE_URL) {
 }
 
 app.use(session(sessionOptions));
+
+app.get('/health', async (req, res) => {
+  const payload = {
+    success: true,
+    status: 'ok',
+    sessionStore: process.env.DATABASE_URL ? 'pg' : 'memory',
+    flaskBackend: flaskBackendBaseUrl,
+  };
+
+  try {
+    const flaskHealth = await new Promise((resolve, reject) => {
+      const httpMod = flaskBackendBaseUrl.startsWith('https') ? https : http;
+      const reqHealth = httpMod.get(`${flaskBackendBaseUrl}/api/v1/health`, (resp) => {
+        let data = '';
+        resp.on('data', (c) => { data += c; });
+        resp.on('end', () => {
+          try {
+            resolve({ status: resp.statusCode, body: JSON.parse(data) });
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+      reqHealth.on('error', reject);
+    });
+    payload.flask = {
+      reachable: flaskHealth.status === 200,
+      status: flaskHealth.body?.status || 'unknown',
+      database: flaskHealth.body?.database || 'unknown',
+    };
+    if (flaskHealth.status !== 200) {
+      payload.status = 'degraded';
+    }
+  } catch (error) {
+    payload.status = 'degraded';
+    payload.flask = { reachable: false, error: error.message };
+  }
+
+  const code = payload.status === 'ok' ? 200 : 503;
+  res.status(code).json(payload);
+});
 
 // Static files
 app.use('/src', express.static(srcDir));
@@ -1209,8 +1258,11 @@ app.delete('/api/records/:id', requireAuth, async (req, res) => {
 
 
 function listen(port) {
-  const server = app.listen(port, () => {
-    console.log(`CPP v0.6 running at http://localhost:${port}`);
+  const host = process.env.HOST || '0.0.0.0';
+  const server = app.listen(port, host, () => {
+    console.log(`CPP web app running on ${host}:${port}`);
+    console.log(`Flask backend: ${flaskBackendBaseUrl}`);
+    console.log(`Session store: ${process.env.DATABASE_URL ? 'Postgres (Neon)' : 'in-memory'}`);
   });
 
   server.on('error', (error) => {

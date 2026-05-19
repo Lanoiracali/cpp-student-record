@@ -20,6 +20,10 @@
     "dev": "node app.js",
     "build:css": "tailwindcss -i ./src/input.css -o ./src/output.css",
     "watch:css": "tailwindcss -i ./src/input.css -o ./src/output.css --watch",
-    "start": "node app.js"
+    "start": "node app.js",
+    "check:deploy": "node check_deploy.js"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
