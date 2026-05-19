@@ -22,6 +22,18 @@ try {
   // Older Node versions may not support this API; ignore.
 }
 
+async function resolveIpv4Host(hostname) {
+  try {
+    const addresses = await dns.promises.resolve4(hostname);
+    if (Array.isArray(addresses) && addresses.length > 0) {
+      return addresses[0];
+    }
+  } catch (error) {
+    // Fallback to the original hostname if DNS resolution fails.
+  }
+  return hostname;
+}
+
 // ── Rate limiting store (in-memory, per IP) ───────────────────────────────────
 const loginAttempts = new Map(); // ip -> { count, lockedUntil }
 const RATE_LIMIT_MAX    = 5;               // max failed attempts
@@ -673,6 +685,10 @@ function isSmtpConfigured() {
   return Boolean(cfg.user && cfg.pass);
 }
 
+function isEmailServiceConfigured() {
+  return Boolean(process.env.RESEND_API_KEY) || isSmtpConfigured();
+}
+
 function getMailTransport() {
   const cfg = getSmtpConfig();
   return nodemailer.createTransport({
@@ -696,25 +712,113 @@ function getMailTransport() {
 }
 
 async function sendTempCodeEmail(to, studentName, tempPassword) {
+  const emailHtml = `<div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;">
+    <div style="background:linear-gradient(135deg,#00236f,#004942);padding:28px;border-radius:12px 12px 0 0;">
+      <h1 style="color:#fff;font-size:20px;margin:0;">CPP Portal</h1>
+    </div>
+    <div style="background:#f7f9fb;padding:24px;border-radius:0 0 12px 12px;">
+      <p style="color:#1e293b;">Hi <strong>${studentName}</strong>,</p>
+      <p style="color:#475569;font-size:14px;">Your temporary login code:</p>
+      <div style="background:#00236f;color:#fff;font-family:monospace;font-size:24px;font-weight:900;
+                  letter-spacing:0.2em;text-align:center;padding:18px;border-radius:10px;margin:16px 0;">${tempPassword}</div>
+      <p style="color:#64748b;font-size:13px;">Enter this on the login page then create your permanent password.</p>
+    </div></div>`;
+
+  if (process.env.RESEND_API_KEY) {
+    const fromEmail = String(process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev').trim();
+    const from = `CPP Portal <${fromEmail}>`;
+    
+    try {
+      await new Promise((resolve, reject) => {
+        const payload = {
+          from,
+          to: [to],
+          subject: 'Your CPP Portal Temporary Login Code',
+          html: emailHtml,
+        };
+        const body = JSON.stringify(payload);
+        const options = {
+          method: 'POST',
+          hostname: 'api.resend.com',
+          port: 443,
+          path: '/emails',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body),
+          },
+        };
+
+        const req = https.request(options, (res) => {
+          let resBody = '';
+          res.setEncoding('utf8');
+          res.on('data', (chunk) => {
+            resBody += chunk;
+          });
+          res.on('end', () => {
+            let parsed = null;
+            try {
+              parsed = JSON.parse(resBody);
+            } catch (e) {
+              parsed = resBody;
+            }
+
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve(parsed);
+            } else {
+              const errorMsg = (parsed && parsed.message) || `Resend API returned status ${res.statusCode}`;
+              reject(new Error(errorMsg));
+            }
+          });
+        });
+
+        req.on('error', reject);
+        req.write(body);
+        req.end();
+      });
+      return; // Successful
+    } catch (resendError) {
+      console.warn('[Resend] Email failed, falling back to SMTP:', resendError.message);
+    }
+  }
+
+  // Fallback to SMTP
   const cfg = getSmtpConfig();
+  const resolvedHost = await resolveIpv4Host(cfg.host);
   const transports = [
-    getMailTransport(),
+    nodemailer.createTransport({
+      host: resolvedHost,
+      port: cfg.port,
+      secure: cfg.secure,
+      requireTLS: !cfg.secure,
+      auth: {
+        user: cfg.user,
+        pass: cfg.pass,
+      },
+      servername: cfg.host,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+      tls: {
+        minVersion: 'TLSv1.2',
+        servername: cfg.host,
+      },
+    }),
   ];
 
   // Gmail usually works on either STARTTLS (587) or implicit TLS (465).
   // If the Render network path rejects one mode, try the other before failing.
   if (cfg.port !== 465) {
     transports.push(nodemailer.createTransport({
-      host: cfg.host,
+      host: resolvedHost,
       port: 465,
       secure: true,
-      family: 4,
-      lookup: (hostname, options, callback) => dns.lookup(hostname, { family: 4, hints: dns.ADDRCONFIG }, callback),
+      servername: cfg.host,
       connectionTimeout: 15000,
       greetingTimeout: 15000,
       socketTimeout: 20000,
       auth: { user: cfg.user, pass: cfg.pass },
-      tls: { minVersion: 'TLSv1.2' },
+      tls: { minVersion: 'TLSv1.2', servername: cfg.host },
     }));
   }
 
@@ -725,17 +829,7 @@ async function sendTempCodeEmail(to, studentName, tempPassword) {
         from: `"CPP Portal" <${cfg.from}>`,
         to,
         subject: 'Your CPP Portal Temporary Login Code',
-        html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:auto;">
-          <div style="background:linear-gradient(135deg,#00236f,#004942);padding:28px;border-radius:12px 12px 0 0;">
-            <h1 style="color:#fff;font-size:20px;margin:0;">CPP Portal</h1>
-          </div>
-          <div style="background:#f7f9fb;padding:24px;border-radius:0 0 12px 12px;">
-            <p style="color:#1e293b;">Hi <strong>${studentName}</strong>,</p>
-            <p style="color:#475569;font-size:14px;">Your temporary login code:</p>
-            <div style="background:#00236f;color:#fff;font-family:monospace;font-size:24px;font-weight:900;
-                        letter-spacing:0.2em;text-align:center;padding:18px;border-radius:10px;margin:16px 0;">${tempPassword}</div>
-            <p style="color:#64748b;font-size:13px;">Enter this on the login page then create your permanent password.</p>
-          </div></div>`,
+        html: emailHtml,
       });
       return;
     } catch (error) {
@@ -772,10 +866,10 @@ app.post('/login/student/request', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Email must end with @plv.edu.ph' });
     }
 
-    if (process.env.NODE_ENV === 'production' && !isSmtpConfigured()) {
+    if (process.env.NODE_ENV === 'production' && !isEmailServiceConfigured()) {
       return res.status(503).json({
         success: false,
-        error: 'Email service is not configured. Set SMTP_USER and SMTP_PASS in your Render environment variables.',
+        error: 'Email service is not configured. Set RESEND_API_KEY or SMTP credentials in your environment variables.',
       });
     }
 

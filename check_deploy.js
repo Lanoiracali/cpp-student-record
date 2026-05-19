@@ -10,7 +10,7 @@ const https = require('https');
 const { URL } = require('url');
 
 const required = ['FLASK_BACKEND_URL', 'DATABASE_URL', 'SESSION_SECRET'];
-const recommended = ['SMTP_USER', 'SMTP_PASS', 'NODE_ENV'];
+const recommended = ['NODE_ENV'];
 
 let exitCode = 0;
 
@@ -42,9 +42,18 @@ if (process.env.SESSION_SECRET === 'change-me-in-production'
   fail('SESSION_SECRET is still the default placeholder');
 }
 
+// Check Email service configuration
+if (process.env.RESEND_API_KEY) {
+  ok('RESEND_API_KEY is set (using Resend HTTP API for emails)');
+} else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  ok('SMTP credentials (SMTP_USER/SMTP_PASS) are set (using SMTP for emails)');
+} else {
+  warn('Neither RESEND_API_KEY nor SMTP credentials (SMTP_USER/SMTP_PASS) are set (student email login may not work)');
+}
+
 for (const key of recommended) {
   if (!process.env[key]) {
-    warn(`${key} is not set (student email login may not work)`);
+    warn(`${key} is not set`);
   }
 }
 
