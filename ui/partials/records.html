@@ -276,11 +276,13 @@
 
 
   // ── Load sections ──────────────────────────────────────────────────────────
+  var _loadedSections = [];
   async function loadSections() {
     const list = qs('#sections-list');
     try {
       const res  = await fetch('/api/sections');
       const data = await res.json();
+      _loadedSections = (data.success && data.sections) ? data.sections : [];
       if (!data.success || !data.sections.length) {
         list.innerHTML = `
           <div class="col-span-full flex flex-col items-center justify-center py-24 text-slate-300">
@@ -830,6 +832,15 @@
       errTx.textContent = 'Please fill in section name, school year, and semester.';
       errEl.style.display = 'flex';
       updateStep1NextState();
+      return;
+    }
+    // Check for duplicate section name (case-insensitive)
+    var isDuplicate = _loadedSections.some(function(s) {
+      return s.name.toLowerCase() === name.toLowerCase();
+    });
+    if (isDuplicate) {
+      errTx.textContent = 'Section "' + name + '" already exists. Please choose a different section.';
+      errEl.style.display = 'flex';
       return;
     }
     errEl.style.display = 'none';
