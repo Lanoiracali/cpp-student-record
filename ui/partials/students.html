@@ -374,6 +374,10 @@
         showErr('Date, type, and score are required.');
         return;
       }
+      if (Number(body.score) < 0 || (body.total_score !== '' && Number(body.total_score) < 0)) {
+        showErr('Score and total score cannot be negative.');
+        return;
+      }
       if (Number(body.score) > (Number(body.total_score) || 0)) {
         showErr('Score must be below or equal to total score.');
         return;
