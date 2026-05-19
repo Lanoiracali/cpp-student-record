@@ -505,13 +505,16 @@
              </thead>
              <tbody class="divide-y divide-slate-100">
                ${members.map((m, i) => {
-                 const initials = (m.first_name[0] || '') + (m.surname[0] || '');
+                 const initials = ((m.first_name && m.first_name[0]) || '') + ((m.surname && m.surname[0]) || '');
                  const ac = AVATAR_COLORS[i % AVATAR_COLORS.length];
                  const activated = !m.is_first_login;
+                 const avatarHtml = m.profile_pic
+                   ? `<img src="${m.profile_pic}" alt="" class="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0" />`
+                   : `<div class="w-9 h-9 rounded-full ${ac} flex items-center justify-center text-white text-xs font-black shrink-0">${initials.toUpperCase()}</div>`;
                  return `<tr class="hover:bg-slate-50 transition-colors group">
                    <td class="px-6 py-4 cursor-pointer" onclick="window.gotoStudentCard(${m.id})">
                      <div class="flex items-center gap-3">
-                       <div class="w-9 h-9 rounded-full ${ac} flex items-center justify-center text-white text-xs font-black shrink-0">${initials.toUpperCase()}</div>
+                       ${avatarHtml}
                        <div>
                          <p class="font-semibold text-slate-900">${m.surname}, ${m.first_name}${m.middle_initial ? ' ' + m.middle_initial + '.' : ''}</p>
                        </div>
@@ -783,6 +786,17 @@
     });
   }
 
+  function updateStep1NextState() {
+    var nextBtn = qs('#btn-step1-next');
+    if (!nextBtn) return;
+
+    var isReady = !!qs('#sec-name').value.trim() && !!qs('#sec-year').value.trim() && !!qs('#sec-sem').value.trim();
+    nextBtn.disabled = !isReady;
+    nextBtn.style.opacity = isReady ? '1' : '0.45';
+    nextBtn.style.cursor = isReady ? 'pointer' : 'not-allowed';
+    nextBtn.style.boxShadow = isReady ? '0 4px 14px rgba(30,64,175,0.35)' : 'none';
+  }
+
   let createdSectionId = null;
 
   on('#btn-add-section', 'click', function() {
@@ -791,6 +805,7 @@
     qs('#step1-error').style.display = 'none';
     qs('#sec-name').value = qs('#sec-year').value = qs('#sec-sem').value = '';
     createdSectionId = null;
+    updateStep1NextState();
   });
 
   ['#btn-modal-close','#btn-modal-close-2'].forEach(function(id) {
@@ -800,11 +815,23 @@
     if (e.target === qs('#modal-add-section')) qs('#modal-add-section').style.display = 'none';
   });
 
+  ['#sec-name', '#sec-year', '#sec-sem'].forEach(function(id) {
+    on(id, 'input', updateStep1NextState);
+    on(id, 'change', updateStep1NextState);
+  });
+
   on('#btn-step1-next', 'click', function() {
     var name = qs('#sec-name').value.trim();
+    var year = qs('#sec-year').value.trim();
+    var sem = qs('#sec-sem').value.trim();
     var errEl = qs('#step1-error');
     var errTx = qs('#step1-error-text');
-    if (!name) { errTx.textContent = 'Section name is required.'; errEl.style.display = 'flex'; return; }
+    if (!name || !year || !sem) {
+      errTx.textContent = 'Please fill in section name, school year, and semester.';
+      errEl.style.display = 'flex';
+      updateStep1NextState();
+      return;
+    }
     errEl.style.display = 'none';
     // Just advance — section is created together with the CSV import
     showStep(2);

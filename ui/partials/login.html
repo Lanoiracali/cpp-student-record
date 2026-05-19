@@ -7,7 +7,12 @@
     </div>
     <form method="POST" action="/auth/login" class="space-y-4">
       <input class="input w-full" name="studId" placeholder="Student ID (e.g., 2024-0012)" required />
-      <input class="input w-full" name="password" placeholder="Password" type="password" required />
+      <div class="relative">
+        <input class="input w-full pr-11" name="password" placeholder="Password" type="password" required />
+        <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors" onclick="const input = this.parentElement.querySelector('input[name=\'password\']'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+          <span class="material-symbols-outlined text-base">visibility</span>
+        </button>
+      </div>
       <button class="btn w-full justify-center bg-slate-900 text-white hover:bg-slate-800" type="submit">Sign
         In</button>
     </form>

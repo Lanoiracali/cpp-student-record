@@ -33,7 +33,12 @@
 
     <label class="space-y-2 block">
       <span class="text-sm font-medium text-slate-700">Password</span>
-      <input class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900" name="password" type="password" required />
+      <div class="relative">
+        <input id="teacher-password" class="w-full rounded-xl border border-slate-300 px-4 py-3 pr-11 outline-none transition focus:border-slate-900" name="password" type="password" required />
+        <button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors" onclick="const input = document.getElementById('teacher-password'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+          <span class="material-symbols-outlined text-base">visibility</span>
+        </button>
+      </div>
     </label>
 
     <div class="flex flex-wrap gap-3 pt-2">

@@ -164,7 +164,10 @@
 <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="password">Password</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">lock</span>
-<input class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="password" name="password" placeholder="••••••••••••" type="password"/>
+<input class="w-full pl-10 pr-11 py-3 bg-white border border-outline-variant rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md text-body-md" id="password" name="password" placeholder="••••••••••••" type="password"/>
+<button type="button" tabindex="-1" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" onclick="const input = document.getElementById('password'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
 </div>
 <p class="text-[10px] text-on-surface-variant font-body-md mt-xs">Must include at least 8 characters with a mix of letters and numbers.</p>
 </div>

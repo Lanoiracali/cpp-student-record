@@ -2,6 +2,7 @@
   "dependencies": {
     "basecoat-css": "^0.3.11",
     "bcryptjs": "^2.4.3",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
@@ -9,6 +10,7 @@
     "htmx.org": "^4.0.0-beta2",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.7",
+    "pg": "^8.11.0",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
@@ -18,8 +20,6 @@
     "dev": "node app.js",
     "build:css": "tailwindcss -i ./src/input.css -o ./src/output.css",
     "watch:css": "tailwindcss -i ./src/input.css -o ./src/output.css --watch",
-    "start": "node app.js",
-    "db:init": "node scripts/init-db.js",
-    "db:seed": "node scripts/seed-db.js"
+    "start": "node app.js"
   }
 }

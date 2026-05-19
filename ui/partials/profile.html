@@ -1,0 +1,506 @@
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out max-w-6xl mx-auto pb-12">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 pb-6 border-b border-slate-200/60">
+    <div class="space-y-2">
+      <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Account Settings</h2>
+      <p class="text-sm text-slate-500 font-medium max-w-xl leading-relaxed">Manage your professional profile details, security credentials, and account lifecycle preferences in one centralized hub.</p>
+    </div>
+    <div>
+      <button onclick="location.href='/dashboard'" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-slate-950 text-sm font-bold rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group">
+        <span class="material-symbols-outlined text-lg transition-transform duration-300 group-hover:-translate-x-1">arrow_back</span>
+        <span>Dashboard</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+    <!-- Left Column: Profile Card & Danger Zone -->
+    <div class="space-y-8 lg:col-span-4 flex flex-col">
+      <!-- Profile Card -->
+      <div class="bg-white border border-slate-100/80 rounded-[2rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col items-center text-center relative overflow-hidden group">
+        <!-- Abstract Background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/50 pointer-events-none"></div>
+        <div class="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-gradient-to-bl from-indigo-100/50 to-transparent blur-3xl group-hover:scale-125 transition-transform duration-700"></div>
+        
+        <!-- Profile Picture with Camera Hover Overlay -->
+        <div class="relative mt-2 group/avatar cursor-pointer z-10 animate-in zoom-in duration-500 delay-100" id="avatar-container" title="Click to upload profile picture">
+          <div class="absolute -inset-2 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-20 blur-md group-hover/avatar:opacity-60 group-hover/avatar:scale-105 transition-all duration-500"></div>
+          <div class="relative w-32 h-32 rounded-full p-1.5 bg-white shadow-xl shadow-indigo-100/50">
+            <div id="profile-pic" class="w-full h-full rounded-full border border-slate-50 shadow-inner flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-50 text-indigo-900 font-black text-4xl overflow-hidden transition-all duration-500 group-hover/avatar:brightness-90 bg-cover bg-center ring-4 ring-white">
+              --
+            </div>
+          </div>
+          <div class="absolute inset-1.5 rounded-full bg-slate-900/60 opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm scale-95 group-hover/avatar:scale-100">
+            <span class="material-symbols-outlined text-3xl mb-1 transform translate-y-2 group-hover/avatar:translate-y-0 transition-transform duration-300">photo_camera</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest transform translate-y-2 group-hover/avatar:translate-y-0 transition-transform duration-300 delay-75">Update</span>
+          </div>
+          <input type="file" id="profile-pic-file" accept="image/*" class="hidden">
+        </div>
+
+        <div class="z-10 w-full mt-8">
+          <h3 id="profile-card-name" class="text-2xl font-black text-slate-900 tracking-tight">Loading...</h3>
+          <div class="flex items-center justify-center gap-1.5 mt-2 text-slate-500">
+            <span class="material-symbols-outlined text-[16px]">mail</span>
+            <p id="profile-card-email" class="text-sm font-medium truncate max-w-[200px]">&nbsp;</p>
+          </div>
+          
+          <!-- Badges -->
+          <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <span id="profile-badge-role" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-indigo-50/80 text-indigo-700 border border-indigo-100 shadow-sm">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+              </span>
+              User
+            </span>
+            <span id="profile-badge-id" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-100/80 text-slate-600 font-mono border border-slate-200/80 shadow-sm">
+              <span class="material-symbols-outlined text-[14px]">badge</span>
+              ID: --
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="mt-auto bg-gradient-to-b from-red-50/50 to-white border border-red-100 rounded-[2rem] p-8 shadow-sm relative overflow-hidden group">
+        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
+          <span class="material-symbols-outlined text-8xl text-red-500 transform rotate-12">warning</span>
+        </div>
+        <div class="relative z-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-red-100 text-red-800 mb-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+            Danger Zone
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Delete Account</h4>
+          <p class="text-sm text-slate-500 leading-relaxed mb-6">
+            Permanently erase your profile, credentials, and all associated records. This action cannot be reversed.
+          </p>
+          <button id="btn-delete-profile" type="button" class="w-full inline-flex items-center justify-center gap-2.5 px-5 py-3.5 bg-white border-2 border-red-100 hover:border-red-500 hover:bg-red-50 active:scale-[0.98] text-red-600 font-bold rounded-2xl transition-all duration-300 cursor-pointer shadow-sm hover:shadow-red-100">
+            <span class="material-symbols-outlined text-[20px]">delete_forever</span>
+            <span>Permanently Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Edit Profile & Password Form -->
+    <div class="space-y-8 lg:col-span-8">
+      <!-- Edit Profile Card -->
+      <div class="bg-white border border-slate-100/80 rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-indigo-500 to-purple-500"></div>
+        
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
+            <span class="material-symbols-outlined text-2xl">badge</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">Personal Information</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Update your name and primary details.</p>
+          </div>
+        </div>
+        
+        <form id="form-edit-profile" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label for="input-first-name" class="text-xs font-bold text-slate-700 ml-1">First Name</label>
+              <div class="relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-indigo-600 transition-colors">person</span>
+                <input type="text" id="input-first-name" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. Jane">
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="input-last-name" class="text-xs font-bold text-slate-700 ml-1">Last Name</label>
+              <div class="relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-indigo-600 transition-colors">person</span>
+                <input type="text" id="input-last-name" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. Doe">
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-2">
+            <label for="input-email" class="text-xs font-bold text-slate-700 ml-1">Email Address</label>
+            <div class="relative group">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-indigo-600 transition-colors">mail</span>
+              <input type="email" id="input-email" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 outline-none placeholder:text-slate-400" required placeholder="e.g. jane.doe@example.com">
+            </div>
+          </div>
+          
+          <div id="profile-edit-error" class="hidden text-sm text-red-800 bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3 animate-in slide-in-from-top-2 duration-300 shadow-sm">
+            <span class="material-symbols-outlined text-xl text-red-500 mt-0.5">error</span>
+            <span class="error-msg font-medium"></span>
+          </div>
+          
+          <div id="profile-edit-success" class="hidden text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3 animate-in slide-in-from-top-2 duration-300 shadow-sm">
+            <span class="material-symbols-outlined text-xl text-emerald-500 mt-0.5">check_circle</span>
+            <span class="font-medium">Profile information updated successfully!</span>
+          </div>
+ 
+          <div class="flex justify-end pt-2">
+            <button type="submit" id="btn-save-profile" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-indigo-600 active:scale-[0.98] text-white text-sm font-bold rounded-2xl shadow-lg shadow-slate-200 hover:shadow-indigo-200 transition-all duration-300 cursor-pointer w-full sm:w-auto">
+              <span class="material-symbols-outlined text-[20px]">save</span>
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </form>
+      </div>
+ 
+      <!-- Change Password Card -->
+      <div class="bg-white border border-slate-100/80 rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-slate-400 to-slate-600"></div>
+        
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm border border-slate-100">
+            <span class="material-symbols-outlined text-2xl">shield_lock</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">Security Credentials</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Ensure your account uses a strong, secure password.</p>
+          </div>
+        </div>
+        
+        <form id="form-change-password" class="space-y-6">
+          <div class="space-y-2 max-w-md">
+            <label for="pw-current" class="text-xs font-bold text-slate-700 ml-1">Current Password</label>
+            <div class="relative group">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-slate-700 transition-colors">key</span>
+              <input id="pw-current" type="password" class="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-slate-200 focus:border-slate-400 transition-all duration-300 outline-none placeholder:text-slate-300" required placeholder="••••••••">
+              <button type="button" tabindex="-1" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-1 rounded-full hover:bg-slate-100" onclick="const el=document.getElementById('pw-current'); el.type=el.type==='password'?'text':'password'; this.firstElementChild.textContent=el.type==='password'?'visibility':'visibility_off';">
+                <span class="material-symbols-outlined text-[20px]">visibility</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2 border-t border-slate-100/50">
+            <div class="space-y-2">
+              <label for="pw-new" class="text-xs font-bold text-slate-700 ml-1">New Password</label>
+              <div class="relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-slate-700 transition-colors">lock_reset</span>
+                <input id="pw-new" type="password" class="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-slate-200 focus:border-slate-400 transition-all duration-300 outline-none placeholder:text-slate-300" required placeholder="••••••••">
+                <button type="button" tabindex="-1" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-1 rounded-full hover:bg-slate-100" onclick="const el=document.getElementById('pw-new'); el.type=el.type==='password'?'text':'password'; this.firstElementChild.textContent=el.type==='password'?'visibility':'visibility_off';">
+                  <span class="material-symbols-outlined text-[20px]">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="pw-confirm" class="text-xs font-bold text-slate-700 ml-1">Confirm New Password</label>
+              <div class="relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] group-focus-within:text-slate-700 transition-colors">verified_user</span>
+                <input id="pw-confirm" type="password" class="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-900 text-sm font-medium focus:bg-white focus:ring-[3px] focus:ring-slate-200 focus:border-slate-400 transition-all duration-300 outline-none placeholder:text-slate-300" required placeholder="••••••••">
+                <button type="button" tabindex="-1" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-1 rounded-full hover:bg-slate-100" onclick="const el=document.getElementById('pw-confirm'); el.type=el.type==='password'?'text':'password'; this.firstElementChild.textContent=el.type==='password'?'visibility':'visibility_off';">
+                  <span class="material-symbols-outlined text-[20px]">visibility</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div id="pw-error" class="hidden text-sm text-red-800 bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3 animate-in slide-in-from-top-2 duration-300 shadow-sm">
+            <span class="material-symbols-outlined text-xl text-red-500 mt-0.5">error</span>
+            <span class="error-msg font-medium"></span>
+          </div>
+          
+          <div id="pw-success" class="hidden text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3 animate-in slide-in-from-top-2 duration-300 shadow-sm">
+            <span class="material-symbols-outlined text-xl text-emerald-500 mt-0.5">check_circle</span>
+            <span class="font-medium">Password updated successfully!</span>
+          </div>
+ 
+          <div class="flex justify-end pt-2">
+            <button type="submit" id="btn-save-pw" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-bold rounded-2xl shadow-sm transition-all duration-300 cursor-pointer w-full sm:w-auto">
+              <span class="material-symbols-outlined text-[20px]">password</span>
+              <span>Update Password</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- DELETE ACCOUNT CONFIRMATION MODAL -->
+  <div id="delete-confirm-modal" class="hidden fixed inset-0 h-full w-full z-[100] items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+    <div class="bg-white border border-slate-100 rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-400">
+      <div class="h-2 bg-gradient-to-r from-red-500 to-rose-600"></div>
+      <div class="p-10 text-center">
+        <div class="w-20 h-20 rounded-full bg-red-50 border-4 border-white shadow-md flex items-center justify-center mx-auto mb-6 relative">
+          <div class="absolute inset-0 rounded-full border-2 border-red-100 animate-ping opacity-20"></div>
+          <span class="material-symbols-outlined text-red-600 text-4xl font-bold animate-pulse">warning</span>
+        </div>
+        <h4 class="font-black text-2xl text-slate-900 mb-3">Delete Account?</h4>
+        <p class="text-sm text-slate-500 leading-relaxed px-2">
+          You are about to permanently delete your account. This action will erase all your data and cannot be undone. Are you absolutely certain?
+        </p>
+      </div>
+      <div class="p-6 bg-slate-50/80 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+        <button id="btn-delete-cancel" class="flex-1 py-3.5 border border-slate-200 bg-white text-slate-700 font-bold rounded-2xl text-sm hover:bg-slate-100 active:scale-[0.98] transition-all duration-200 cursor-pointer shadow-sm">
+          Cancel
+        </button>
+        <button id="btn-delete-confirm" class="flex-1 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-2xl text-sm hover:from-red-600 hover:to-red-700 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-red-200">
+          <span class="material-symbols-outlined text-[18px]">delete</span>
+          <span>Yes, Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    (async function() {
+      // Helper to display errors/success alerts
+      function showAlert(elId, show, message = '') {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        if (show) {
+          const msgEl = el.querySelector('.error-msg');
+          if (msgEl) msgEl.textContent = message;
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      }
+
+      // Populate sidebar details helper
+      function syncSidebar(p) {
+        const sidebarPic = document.getElementById('sidebar-pic');
+        const sidebarName = document.getElementById('sidebar-name');
+        if (sidebarPic) {
+          if (p.profile_pic) {
+            sidebarPic.style.backgroundImage = `url(${p.profile_pic})`;
+            sidebarPic.style.backgroundSize = 'cover';
+            sidebarPic.textContent = '';
+          } else {
+            const initials = ((p.first_name||'')[0]||'') + ((p.last_name||'')[0]||'');
+            sidebarPic.style.backgroundImage = 'none';
+            sidebarPic.textContent = (initials || p.stud_id || '').toUpperCase();
+          }
+        }
+        if (sidebarName) {
+          sidebarName.textContent = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || p.stud_id || 'Teacher';
+        }
+      }
+
+      // Fetch profile initially
+      try {
+        const res = await fetch('/api/profile');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to load profile');
+        const p = data.profile;
+        
+        // 1. Profile card updates
+        const pic = document.getElementById('profile-pic');
+        const cardName = document.getElementById('profile-card-name');
+        const cardEmail = document.getElementById('profile-card-email');
+        const badgeRole = document.getElementById('profile-badge-role');
+        const badgeId = document.getElementById('profile-badge-id');
+        
+        if (p.profile_pic) {
+          pic.style.backgroundImage = `url(${p.profile_pic})`;
+          pic.style.backgroundSize = 'cover';
+          pic.textContent = '';
+        } else {
+          const initials = ((p.first_name||'')[0]||'') + ((p.last_name||'')[0]||'');
+          pic.textContent = initials.toUpperCase() || p.stud_id || '';
+        }
+        
+        cardName.textContent = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || p.stud_id;
+        cardEmail.textContent = p.email || 'No email provided';
+        badgeRole.innerHTML = `
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${p.is_teacher ? 'bg-purple-400' : 'bg-indigo-400'} opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 ${p.is_teacher ? 'bg-purple-600' : 'bg-indigo-600'}"></span>
+          </span>
+          ${p.is_teacher ? 'Teacher' : 'Student'}
+        `;
+        badgeId.innerHTML = `<span class="material-symbols-outlined text-[14px]">badge</span> ID: ${p.stud_id || p.id}`;
+        
+        // 2. Input updates
+        document.getElementById('input-first-name').value = p.first_name || '';
+        document.getElementById('input-last-name').value = p.last_name || '';
+        document.getElementById('input-email').value = p.email || '';
+        
+        // 3. Keep sidebar in sync
+        syncSidebar(p);
+      } catch (e) {
+        console.error(e);
+        // alert('Error loading profile: ' + e.message);
+      }
+
+      // Live Profile Picture upload triggers
+      const avatarContainer = document.getElementById('avatar-container');
+      const fileInput = document.getElementById('profile-pic-file');
+      
+      avatarContainer.onclick = () => fileInput.click();
+      
+      fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          const base64Data = evt.target.result;
+          
+          // Temporary optimistic UI update
+          const pic = document.getElementById('profile-pic');
+          const oldBg = pic.style.backgroundImage;
+          const oldText = pic.textContent;
+          pic.style.backgroundImage = `url(${base64Data})`;
+          pic.style.backgroundSize = 'cover';
+          pic.textContent = '';
+          
+          try {
+            const upRes = await fetch('/api/profile/upload-pic', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ profile_pic: base64Data })
+            });
+            const upData = await upRes.json();
+            if (!upData.success) throw new Error(upData.error || 'Upload failed');
+            
+            // Reload & update sidebar
+            const res = await fetch('/api/profile');
+            const data = await res.json();
+            if (data.success) {
+              syncSidebar(data.profile);
+            }
+          } catch(err) {
+            pic.style.backgroundImage = oldBg;
+            pic.textContent = oldText;
+            alert('Failed to save profile picture: ' + err.message);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      // Handle profile info form submit
+      const formEditProfile = document.getElementById('form-edit-profile');
+      const btnSaveProfile = document.getElementById('btn-save-profile');
+      
+      formEditProfile.onsubmit = async (e) => {
+        e.preventDefault();
+        showAlert('profile-edit-error', false);
+        showAlert('profile-edit-success', false);
+        
+        const firstName = document.getElementById('input-first-name').value.trim();
+        const lastName = document.getElementById('input-last-name').value.trim();
+        const email = document.getElementById('input-email').value.trim();
+        
+        btnSaveProfile.disabled = true;
+        btnSaveProfile.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> <span>Saving...</span>`;
+        
+        try {
+          const upRes = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ first_name: firstName, last_name: lastName, email: email })
+          });
+          const upData = await upRes.json();
+          if (!upData.success) throw new Error(upData.error || 'Update failed');
+          
+          // Update card display
+          document.getElementById('profile-card-name').textContent = `${firstName} ${lastName}`;
+          document.getElementById('profile-card-email').textContent = email;
+          
+          // Update avatar initials if profile pic is empty
+          const pic = document.getElementById('profile-pic');
+          if (!pic.style.backgroundImage || pic.style.backgroundImage === 'none') {
+            const initials = (firstName[0]||'') + (lastName[0]||'');
+            pic.textContent = initials.toUpperCase();
+          }
+          
+          showAlert('profile-edit-success', true);
+          
+          // Sync sidebar
+          if (upData.profile) {
+            syncSidebar(upData.profile);
+          }
+        } catch(err) {
+          showAlert('profile-edit-error', true, err.message);
+        } finally {
+          btnSaveProfile.disabled = false;
+          btnSaveProfile.innerHTML = `<span class="material-symbols-outlined text-[20px]">save</span> <span>Save Changes</span>`;
+        }
+      };
+
+      // Handle Change Password submit
+      const formChangePassword = document.getElementById('form-change-password');
+      const btnSavePw = document.getElementById('btn-save-pw');
+      
+      formChangePassword.onsubmit = async (e) => {
+        e.preventDefault();
+        showAlert('pw-error', false);
+        showAlert('pw-success', false);
+        
+        const currentPw = document.getElementById('pw-current').value;
+        const newPw = document.getElementById('pw-new').value;
+        const confirmPw = document.getElementById('pw-confirm').value;
+        
+        if (newPw !== confirmPw) {
+          showAlert('pw-error', true, 'New passwords do not match.');
+          return;
+        }
+        
+        if (newPw.length < 6) {
+          showAlert('pw-error', true, 'New password must be at least 6 characters.');
+          return;
+        }
+        
+        btnSavePw.disabled = true;
+        btnSavePw.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> <span>Updating...</span>`;
+        
+        try {
+          const upRes = await fetch('/api/profile/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              current_password: currentPw,
+              new_password: newPw,
+              confirm_password: confirmPw
+            })
+          });
+          const upData = await upRes.json();
+          if (!upData.success) throw new Error(upData.error || 'Password update failed');
+          
+          showAlert('pw-success', true);
+          formChangePassword.reset();
+        } catch(err) {
+          showAlert('pw-error', true, err.message);
+        } finally {
+          btnSavePw.disabled = false;
+          btnSavePw.innerHTML = `<span class="material-symbols-outlined text-[20px]">password</span> <span>Update Password</span>`;
+        }
+      };
+
+      // Delete account workflows
+      const deleteModal = document.getElementById('delete-confirm-modal');
+      const btnDeleteOpen = document.getElementById('btn-delete-profile');
+      const btnDeleteCancel = document.getElementById('btn-delete-cancel');
+      const btnDeleteConfirm = document.getElementById('btn-delete-confirm');
+      
+      btnDeleteOpen.onclick = () => {
+        deleteModal.classList.remove('hidden');
+        deleteModal.classList.add('flex');
+      };
+      
+      btnDeleteCancel.onclick = () => {
+        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('flex');
+      };
+      
+      btnDeleteConfirm.onclick = async () => {
+        btnDeleteConfirm.disabled = true;
+        btnDeleteConfirm.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> <span>Deleting...</span>`;
+        
+        try {
+          const res = await fetch('/api/profile', {
+            method: 'DELETE'
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || 'Failed to delete account');
+          
+          // Successful deletion destroys the session. Redirect to login.
+          window.location.href = '/';
+        } catch(err) {
+          alert('Error deleting account: ' + err.message);
+          btnDeleteConfirm.disabled = false;
+          btnDeleteConfirm.innerHTML = `<span class="material-symbols-outlined text-[18px]">delete</span> <span>Yes, Delete</span>`;
+        }
+      };
+    })();
+  </script>
+</div>

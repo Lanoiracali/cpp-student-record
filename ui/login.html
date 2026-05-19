@@ -289,9 +289,12 @@
             <div class="relative">
               <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">lock</span>
               <input
-                class="w-full h-[48px] pl-11 pr-md bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
+                class="w-full h-[48px] pl-11 pr-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md outline-none transition-all"
                 id="password" name="password" placeholder="••••••••" type="password" required
                 autocomplete="current-password" />
+            <button type="button" tabindex="-1" class="absolute right-md top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" onclick="const input = document.getElementById('password'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+              <span class="material-symbols-outlined text-xl">visibility</span>
+            </button>
             </div>
           </div>
 

@@ -1,0 +1,288 @@
+﻿<!-- Student Profile Page -->
+<section class="space-y-6" id="student-profile-root">
+  <div class="flex items-center justify-center py-20 text-slate-300">
+    <span class="material-symbols-outlined text-5xl animate-spin">progress_activity</span>
+  </div>
+</section>
+
+<script>
+(function() {
+  window.loadStudentProfile = async function() {
+    const root = document.getElementById('student-profile-root') || document.getElementById('page-body');
+    root.innerHTML = `<div class="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3">
+      <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span>
+      <p class="text-sm">Loading profile…</p>
+    </div>`;
+    
+    try {
+      const res = await fetch('/api/profile');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to load profile');
+      renderProfile(data.profile, root);
+    } catch(e) {
+      root.innerHTML = `<div class="flex flex-col items-center justify-center py-24 text-red-500 space-y-2">
+        <span class="material-symbols-outlined text-5xl">error</span>
+        <p class="font-semibold">Failed to load profile</p>
+        <p class="text-sm">${e.message}</p>
+      </div>`;
+    }
+  };
+
+  function renderProfile(profile, container) {
+    const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    const profilePic = profile.profile_pic || null;
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <!-- Profile Header -->
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">My Profile</p>
+            <h2 class="mt-1 text-3xl font-bold text-slate-900">${fullName}</h2>
+          </div>
+          <button id="btn-upload-pic" class="flex items-center gap-2 px-5 py-2.5 bg-blue-900 text-white text-sm font-bold rounded-xl hover:bg-blue-800 active:scale-95 transition-all shadow-sm">
+            <span class="material-symbols-outlined text-base">image</span>Change Picture
+          </button>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+            <!-- Profile Picture -->
+            <div class="flex flex-col items-center gap-4">
+              <div class="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-100 to-teal-100 flex items-center justify-center border-4 border-white shadow-md overflow-hidden">
+                ${profilePic ? `<img src="${profilePic}" alt="Profile" class="w-full h-full object-cover" />` : `<span class="material-symbols-outlined text-6xl text-slate-400" style="font-variation-settings:'FILL' 1;">account_circle</span>`}
+              </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="md:col-span-2 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs font-bold uppercase text-slate-500">First Name</label>
+                  <p class="text-sm text-slate-900 mt-1">${profile.first_name || '—'}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-bold uppercase text-slate-500">Last Name</label>
+                  <p class="text-sm text-slate-900 mt-1">${profile.last_name || '—'}</p>
+                </div>
+              </div>
+              <div>
+                <label class="text-xs font-bold uppercase text-slate-500">User ID</label>
+                <p class="text-sm text-slate-900 mt-1">${profile.stud_id || '—'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-3">
+          <button id="btn-change-password" class="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-900 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all">
+            <span class="material-symbols-outlined text-base">lock</span>Change Password
+          </button>
+        </div>
+      </div>
+
+      <!-- Change Password Modal -->
+      <div id="change-password-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+        <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:28rem; overflow:hidden;">
+          <div style="background:linear-gradient(to right,#1e3a8a,#1e40af); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem;">lock</span>
+              <div>
+                <p style="color:rgba(191,219,254,0.8); font-size:0.65rem; font-weight:700; text-transform:uppercase; margin:0;">Security</p>
+                <h4 style="color:#fff; font-weight:800; font-size:1rem; margin:0;">Change Password</h4>
+              </div>
+            </div>
+            <button id="pw-modal-close" style="background:rgba(255,255,255,0.15); border:none; border-radius:0.5rem; padding:0.4rem; cursor:pointer; color:#fff;">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+              <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:#64748b;">Current Password</label>
+              <div style="position:relative;">
+                <input id="pw-current" type="password" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; padding-right:2.5rem; font-size:0.875rem; outline:none; width:100%; box-sizing:border-box;" />
+                <button type="button" tabindex="-1" style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#94a3b8;" onclick="const el=document.getElementById('pw-current'); el.type=el.type==='password'?'text':'password';">
+                  <span class="material-symbols-outlined" style="font-size:1.2rem;">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+              <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:#64748b;">New Password</label>
+              <div style="position:relative;">
+                <input id="pw-new" type="password" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; padding-right:2.5rem; font-size:0.875rem; outline:none; width:100%; box-sizing:border-box;" />
+                <button type="button" tabindex="-1" style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#94a3b8;" onclick="const el=document.getElementById('pw-new'); el.type=el.type==='password'?'text':'password';">
+                  <span class="material-symbols-outlined" style="font-size:1.2rem;">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+              <label style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:#64748b;">Confirm New Password</label>
+              <div style="position:relative;">
+                <input id="pw-confirm" type="password" style="border:1.5px solid #e2e8f0; border-radius:0.75rem; padding:0.6rem 0.85rem; padding-right:2.5rem; font-size:0.875rem; outline:none; width:100%; box-sizing:border-box;" />
+                <button type="button" tabindex="-1" style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#94a3b8;" onclick="const el=document.getElementById('pw-confirm'); el.type=el.type==='password'?'text':'password';">
+                  <span class="material-symbols-outlined" style="font-size:1.2rem;">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div id="pw-error" style="display:none; font-size:0.8rem; color:#b91c1c; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem;">
+              <span id="pw-error-text"></span>
+            </div>
+            <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+              <button id="pw-modal-cancel" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer;">Cancel</button>
+              <button id="pw-modal-save" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer;">Change Password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Picture Upload Modal -->
+      <div id="upload-pic-modal" style="display:none; position:fixed; inset:0; z-index:60; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); padding:1rem;">
+        <div style="background:#fff; border-radius:1.25rem; box-shadow:0 25px 60px rgba(0,0,0,0.2); width:100%; max-width:32rem; overflow:hidden;">
+          <div style="background:linear-gradient(to right,#1e3a8a,#1e40af); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span class="material-symbols-outlined" style="color:#fff; font-size:1.2rem;">image</span>
+              <div>
+                <p style="color:rgba(191,219,254,0.8); font-size:0.65rem; font-weight:700; text-transform:uppercase; margin:0;">Profile</p>
+                <h4 style="color:#fff; font-weight:800; font-size:1rem; margin:0;">Upload Picture</h4>
+              </div>
+            </div>
+            <button id="pic-modal-close" style="background:rgba(255,255,255,0.15); border:none; border-radius:0.5rem; padding:0.4rem; cursor:pointer; color:#fff;">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
+            <input id="pic-file-input" type="file" accept="image/*" style="display:none;" />
+            <div id="pic-preview" style="display:none; width:100%; aspect-ratio:1; border-radius:9999px; background:#f0f0f0; overflow:hidden;">
+              <img id="pic-preview-img" style="width:100%; height:100%; object-fit:cover;" />
+            </div>
+            <button id="pic-file-button" type="button" style="padding:0.75rem; border:2px dashed #e2e8f0; border-radius:0.75rem; background:#f8fafc; color:#475569; font-size:0.875rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+              <span class="material-symbols-outlined">upload_file</span>Choose Image
+            </button>
+            <div id="pic-error" style="display:none; font-size:0.8rem; color:#b91c1c; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; padding:0.65rem 1rem;">
+              <span id="pic-error-text"></span>
+            </div>
+            <div style="display:flex; gap:0.75rem; padding-top:0.25rem;">
+              <button id="pic-modal-cancel" style="flex:1; padding:0.7rem; border:1.5px solid #e2e8f0; background:#fff; color:#475569; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer;">Cancel</button>
+              <button id="pic-modal-upload" style="flex:1; padding:0.7rem; border:none; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; font-size:0.875rem; font-weight:700; border-radius:0.85rem; cursor:pointer;">Upload</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Wire up event listeners
+    wireUpEventListeners(profile);
+  }
+
+  function wireUpEventListeners(profile) {
+    // Change Password Modal
+    document.getElementById('btn-change-password').onclick = () => {
+      document.getElementById('pw-current').value = '';
+      document.getElementById('pw-new').value = '';
+      document.getElementById('pw-confirm').value = '';
+      document.getElementById('pw-error').style.display = 'none';
+      document.getElementById('change-password-modal').style.display = 'flex';
+    };
+
+    document.getElementById('pw-modal-close').onclick = () => document.getElementById('change-password-modal').style.display = 'none';
+    document.getElementById('pw-modal-cancel').onclick = () => document.getElementById('change-password-modal').style.display = 'none';
+
+    document.getElementById('pw-modal-save').onclick = async () => {
+      const current = document.getElementById('pw-current').value;
+      const newPw = document.getElementById('pw-new').value;
+      const confirm = document.getElementById('pw-confirm').value;
+      const errorEl = document.getElementById('pw-error');
+      const errorText = document.getElementById('pw-error-text');
+
+      if (!current || !newPw || !confirm) {
+        errorText.textContent = 'All password fields are required';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (newPw !== confirm) {
+        errorText.textContent = 'New passwords do not match';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/profile/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current_password: current, new_password: newPw, confirm_password: confirm })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        
+        // Success
+        errorEl.style.display = 'none';
+        alert('Password changed successfully!');
+        document.getElementById('change-password-modal').style.display = 'none';
+      } catch(e) {
+        errorText.textContent = e.message;
+        errorEl.style.display = 'block';
+      }
+    };
+
+    // Upload Picture Modal
+    document.getElementById('btn-upload-pic').onclick = () => {
+      document.getElementById('pic-file-input').value = '';
+      document.getElementById('pic-preview').style.display = 'none';
+      document.getElementById('pic-error').style.display = 'none';
+      document.getElementById('upload-pic-modal').style.display = 'flex';
+    };
+
+    document.getElementById('pic-modal-close').onclick = () => document.getElementById('upload-pic-modal').style.display = 'none';
+    document.getElementById('pic-modal-cancel').onclick = () => document.getElementById('upload-pic-modal').style.display = 'none';
+    document.getElementById('pic-file-button').onclick = () => document.getElementById('pic-file-input').click();
+
+    document.getElementById('pic-file-input').onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const preview = document.getElementById('pic-preview');
+        const previewImg = document.getElementById('pic-preview-img');
+        previewImg.src = event.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    };
+
+    document.getElementById('pic-modal-upload').onclick = async () => {
+      const preview = document.getElementById('pic-preview-img');
+      if (!preview.src) {
+        document.getElementById('pic-error-text').textContent = 'Please select an image first';
+        document.getElementById('pic-error').style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/profile/upload-pic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile_pic: preview.src })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        
+        // Reload profile
+        window.loadStudentProfile();
+        document.getElementById('upload-pic-modal').style.display = 'none';
+      } catch(e) {
+        document.getElementById('pic-error-text').textContent = e.message;
+        document.getElementById('pic-error').style.display = 'block';
+      }
+    };
+  }
+
+  // Auto-load on page load if student-profile-root exists
+  if (document.getElementById('student-profile-root')) {
+    window.loadStudentProfile();
+  }
+})();
+</script>

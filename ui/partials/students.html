@@ -32,6 +32,13 @@
     }
   };
 
+  function renderAvatar(profilePic, initials) {
+    if (profilePic) {
+      return `<img src="${profilePic}" alt="" style="width:5rem;height:5rem;border-radius:9999px;object-fit:cover;border:2px solid rgba(255,255,255,0.25);flex-shrink:0;align-self:center;" />`;
+    }
+    return `<div style="width:5rem;height:5rem;border-radius:9999px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.875rem;flex-shrink:0;align-self:center;">${initials.toUpperCase()}</div>`;
+  }
+
   function renderCard(s, records, container) {
     const initials = (s.first_name?.[0] || '') + (s.surname?.[0] || '');
     const fullName = `${s.surname || ''}, ${s.first_name || ''}${s.middle_initial ? ' ' + s.middle_initial + '.' : ''}`;
@@ -138,9 +145,7 @@
           <div style="display:grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: start;">
 
             <!-- Left: Avatar -->
-            <div style="width:5rem; height:5rem; border-radius:9999px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:1.875rem; flex-shrink:0; align-self:center;">
-              ${initials.toUpperCase()}
-            </div>
+            ${renderAvatar(s.profile_pic, initials)}
 
             <!-- Center: Group -->
             <div style="text-align:center; padding-top:0.5rem;">

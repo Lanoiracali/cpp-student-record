@@ -39,9 +39,15 @@
   <!-- Right: student name + logout -->
   <div class="flex items-center gap-3">
     <div class="hidden sm:flex items-center gap-2">
+      <img id="nav-avatar" alt="" class="hidden w-8 h-8 rounded-full object-cover border border-slate-200" />
       <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-900 font-black text-sm" id="nav-initials">—</div>
       <span class="text-sm font-semibold text-slate-700" id="nav-name">Loading…</span>
     </div>
+    <a href="/student/profile" title="Click to view profile"
+       class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-xl hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all group">
+      <span class="material-symbols-outlined text-base transition-transform group-hover:scale-110">account_circle</span>
+      <span class="hidden sm:inline">Click to see profile</span>
+    </a>
     <form action="/logout" method="post">
       <button type="submit"
               class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-xl hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all">
@@ -91,13 +97,32 @@
     }
   }
 
+  function renderAvatar(profilePic, initials, className) {
+    if (profilePic) {
+      return `<img src="${profilePic}" alt="" class="${className} rounded-full object-cover border-2 border-white/30 shrink-0 self-center" />`;
+    }
+    return `<div class="${className} rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center text-white font-black shrink-0 self-center">${initials.toUpperCase()}</div>`;
+  }
+
   function renderCard(s, records, enrollments) {
     const initials = (s.first_name?.[0] || '') + (s.surname?.[0] || '');
     const fullName = `${s.surname}, ${s.first_name}${s.middle_initial ? ' ' + s.middle_initial + '.' : ''}`;
     const root = document.getElementById('card-root');
+    const navAvatar = document.getElementById('nav-avatar');
+    const navInitials = document.getElementById('nav-initials');
 
     // Update navbar
-    document.getElementById('nav-initials').textContent = initials.toUpperCase();
+    if (s.profile_pic && navAvatar) {
+      navAvatar.src = s.profile_pic;
+      navAvatar.classList.remove('hidden');
+      navInitials.classList.add('hidden');
+    } else if (navAvatar) {
+      navAvatar.classList.add('hidden');
+      navInitials.classList.remove('hidden');
+      navInitials.textContent = initials.toUpperCase();
+    } else {
+      navInitials.textContent = initials.toUpperCase();
+    }
     document.getElementById('nav-name').textContent = s.first_name + ' ' + s.surname;
 
     const selectorHtml = enrollments && enrollments.length > 1 ? `
@@ -121,10 +146,7 @@
           <div class="flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto] gap-4 sm:gap-6 items-start">
 
             <!-- Left: Avatar -->
-            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 border-2 border-white/30
-                        flex items-center justify-center text-white font-black text-2xl sm:text-3xl shrink-0 self-center">
-              ${initials.toUpperCase()}
-            </div>
+            ${renderAvatar(s.profile_pic, initials, 'w-16 h-16 sm:w-20 sm:h-20 text-2xl sm:text-3xl')}
 
             <!-- Center: Group -->
             <div class="text-center hidden sm:block pt-2">

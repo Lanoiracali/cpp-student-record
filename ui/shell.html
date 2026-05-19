@@ -55,11 +55,50 @@
       </nav>
 
       <div class="mt-8 space-y-2 border-t border-slate-200 pt-6">
+        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all duration-200 group" style="cursor:pointer;" hx-get="/partials/profile" hx-target="#page-body" hx-push-url="true">
+          <div id="sidebar-pic" class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-900 font-black text-sm shrink-0 shadow-sm transition-transform group-hover:scale-105">T</div>
+          <div class="flex-1 min-w-0">
+            <p id="sidebar-name" class="text-sm font-bold text-slate-900 truncate">Teacher</p>
+            <div class="flex items-center gap-1">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <p id="sidebar-role" class="text-xs text-slate-400 truncate">Administrator</p>
+            </div>
+            <p class="text-[10px] text-blue-600 font-semibold mt-0.5 flex items-center gap-0.5 opacity-80 group-hover:opacity-100 group-hover:underline">
+              <span class="material-symbols-outlined text-[12px]">account_circle</span>Click to view profile
+            </p>
+          </div>
+          <span class="material-symbols-outlined text-slate-400 text-sm shrink-0 transition-transform group-hover:translate-x-0.5">chevron_right</span>
+        </div>
         <form method="POST" action="/auth/logout" class="w-full" id="global-logout-form">
           <button id="sidebar-logout" type="button"
             class="btn w-full justify-center bg-slate-200 text-slate-900 hover:bg-slate-300">Logout</button>
         </form>
       </div>
+
+      <script>
+        (async function(){
+          try{
+            const res = await fetch('/api/profile');
+            const data = await res.json();
+            if (data && data.success && data.profile) {
+              const p = data.profile;
+              const pic = document.getElementById('sidebar-pic');
+              const name = document.getElementById('sidebar-name');
+              const role = document.getElementById('sidebar-role');
+              if (p.profile_pic) {
+                pic.style.backgroundImage = `url(${p.profile_pic})`;
+                pic.style.backgroundSize = 'cover';
+                pic.textContent = '';
+              } else {
+                const initials = ((p.first_name||'')[0]||'') + ((p.last_name||'')[0]||'');
+                pic.textContent = (initials || p.stud_id || '').toUpperCase();
+              }
+              name.textContent = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || p.stud_id || 'Teacher';
+              role.textContent = p.is_teacher ? 'Teacher' : '';
+            }
+          }catch(e){/* ignore */}
+        })();
+      </script>
     </aside>
 
     <div class="ml-72 flex min-h-screen w-full flex-col">

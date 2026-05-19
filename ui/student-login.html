@@ -180,16 +180,22 @@
           <label class="text-xs font-bold uppercase tracking-wider text-slate-500">New Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
-            <input id="pw-input" type="password" placeholder="At least 6 characters"
-                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+                 <input id="pw-input" type="password" placeholder="At least 6 characters"
+                   class="w-full h-12 pl-11 pr-11 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+                 <button type="button" tabindex="-1" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors" onclick="const input = document.getElementById('pw-input'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+              <span class="material-symbols-outlined text-xl">visibility</span>
+                 </button>
           </div>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Confirm Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">lock_reset</span>
-            <input id="pw-confirm" type="password" placeholder="Repeat your password"
-                   class="w-full h-12 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+                 <input id="pw-confirm" type="password" placeholder="Repeat your password"
+                   class="w-full h-12 pl-11 pr-11 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900"/>
+                 <button type="button" tabindex="-1" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors" onclick="const input = document.getElementById('pw-confirm'); input.type = input.type === 'password' ? 'text' : 'password'; this.querySelector('span').textContent = input.type === 'password' ? 'visibility' : 'visibility_off';">
+              <span class="material-symbols-outlined text-xl">visibility</span>
+                 </button>
           </div>
         </div>
         <button id="btn-setpw" onclick="setPassword()"

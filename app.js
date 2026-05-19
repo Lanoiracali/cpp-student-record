@@ -1,13 +1,19 @@
 require('dotenv').config();
-const express = require('express');
 const path = require('path');
+// Reuse Neon DATABASE_URL from the Flask backend when not set locally
+if (!process.env.DATABASE_URL) {
+  require('dotenv').config({ path: path.join(__dirname, '..', 'cpp-backend', '.env') });
+}
+
+const express = require('express');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
 const { URL } = require('url');
-const { getUserByStudId, verifyPassword, getAllStudents, getStudentRecords } = require('./src/db');
 
 // ── Rate limiting store (in-memory, per IP) ───────────────────────────────────
 const loginAttempts = new Map(); // ip -> { count, lockedUntil }
@@ -49,6 +55,62 @@ function getRateLimitMinutes(ip) {
 // This is a lightweight CSRF / session-fixation defense.
 function generateSessionToken() {
   return crypto.randomBytes(32).toString('hex');
+}
+
+function getRememberToken(req) {
+  if (!req.headers.cookie) return null;
+  const cookies = req.headers.cookie.split(';').map((c) => c.trim());
+  for (const cookie of cookies) {
+    if (cookie.startsWith('remember_token=')) {
+      return decodeURIComponent(cookie.substring('remember_token='.length));
+    }
+  }
+  return null;
+}
+
+function applyUserToSession(req, user) {
+  const studentId = user.studentId || user.student_id;
+  const isTeacher = user.isTeacher !== undefined ? user.isTeacher : user.is_teacher;
+
+  req.session.userId = user.id;
+  req.session.sessionToken = generateSessionToken();
+  if (studentId) req.session.studentId = studentId;
+
+  req.session.user = {
+    id: user.id,
+    studentId,
+    studId: user.studId || user.stud_id,
+    fullName: user.fullName || user.full_name
+      || `${user.firstName || user.first_name || ''} ${user.lastName || user.last_name || ''}`.trim(),
+    firstName: user.firstName || user.first_name,
+    lastName: user.lastName || user.last_name,
+    email: user.email || '',
+    isTeacher,
+    isStudent: !isTeacher,
+  };
+}
+
+function getPostLoginRedirect(user) {
+  const isTeacher = user.isTeacher !== undefined ? user.isTeacher : user.is_teacher;
+  const studentId = user.studentId || user.student_id;
+  if (!isTeacher && studentId) return '/student';
+  return '/dashboard';
+}
+
+async function tryRestoreSessionFromRememberToken(req) {
+  const rememberToken = getRememberToken(req);
+  if (!rememberToken) return false;
+
+  try {
+    const backendResult = await postJson(`${flaskBackendBaseUrl}/api/v1/verify_token`, { token: rememberToken });
+    if (backendResult.statusCode === 200 && backendResult.body && backendResult.body.success) {
+      applyUserToSession(req, backendResult.body.user);
+      return true;
+    }
+  } catch (error) {
+    console.error('Token verification error:', error);
+  }
+  return false;
 }
 
 const app = express();
@@ -168,20 +230,38 @@ function postJson(urlString, payload) {
 }
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Session configuration
-app.use(session({
-  secret: 'your-secret-key-change-this',
+// Session configuration — persisted in Neon Postgres so logins survive server restarts
+const sessionSecret = process.env.SESSION_SECRET || 'your-secret-key-change-this';
+const sessionOptions = {
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to true if using HTTPS
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  },
+};
+
+if (process.env.DATABASE_URL) {
+  const pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL.includes('neon.tech') ? { rejectUnauthorized: false } : undefined,
+  });
+  sessionOptions.store = new pgSession({
+    pool: pgPool,
+    tableName: 'express_sessions',
+    createTableIfMissing: true,
+  });
+  console.log('[session] Using Postgres session store (Neon)');
+} else {
+  console.warn('[session] DATABASE_URL not set — sessions will not survive server restarts');
+}
+
+app.use(session(sessionOptions));
 
 // Static files
 app.use('/src', express.static(srcDir));
@@ -190,6 +270,7 @@ app.use('/ui', express.static(uiDir));
 // Routes map
 const routes = new Map([
   ['dashboard', 'dashboard'],
+  ['profile', 'profile'],
   ['records', 'records'],
   ['students', 'students'],
   ['records-student', 'students'],
@@ -199,86 +280,51 @@ const routes = new Map([
   ['teacher-reg', 'teacher-reg'],
 ]);
 
-// Middleware to check authentication
+// Middleware to check authentication (teacher/admin)
 async function requireAuth(req, res, next) {
   if (req.session.userId && req.session.sessionToken) {
     return next();
   }
 
-  // Legacy sessions without a token (e.g. server restart) — re-authenticate
   if (req.session.userId && !req.session.sessionToken) {
     req.session.sessionToken = generateSessionToken();
     return next();
   }
 
-  // Try to use remember_token
-  let rememberToken = null;
-  if (req.headers.cookie) {
-    const cookies = req.headers.cookie.split(';').map(c => c.trim());
-    for (const cookie of cookies) {
-      if (cookie.startsWith('remember_token=')) {
-        rememberToken = cookie.substring('remember_token='.length);
-        break;
-      }
-    }
-  }
-
-  if (rememberToken) {
-    try {
-      const backendResult = await postJson(`${flaskBackendBaseUrl}/api/v1/verify_token`, { token: rememberToken });
-      if (backendResult.statusCode === 200 && backendResult.body && backendResult.body.success) {
-        const user = backendResult.body.user;
-        req.session.userId = user.id;
-        req.session.studentId = user.studentId || user.student_id;
-        req.session.sessionToken = generateSessionToken();
-        req.session.user = {
-          id: user.id,
-          studentId: user.studentId || user.student_id,
-          studId: user.studId || user.stud_id,
-          firstName: user.firstName || user.first_name,
-          lastName: user.lastName || user.last_name,
-          isTeacher: user.isTeacher !== undefined ? user.isTeacher : user.is_teacher
-        };
-        return next();
-      }
-    } catch (error) {
-      console.error('Token verification error:', error);
-    }
+  if (await tryRestoreSessionFromRememberToken(req)) {
+    return next();
   }
 
   res.redirect('/login');
 }
 
+// Middleware to check authentication for any logged-in user (teacher OR student)
+async function requireAnyAuth(req, res, next) {
+  if (req.session.userId) {
+    return next();
+  }
+
+  if (await tryRestoreSessionFromRememberToken(req)) {
+    return next();
+  }
+
+  // Determine redirect based on context
+  if (req.xhr || req.headers.accept?.includes('application/json')) {
+    return res.status(401).json({ success: false, error: 'Not authenticated' });
+  }
+  res.redirect('/login/student');
+}
+
 // Middleware to redirect if authenticated
 async function redirectIfAuth(req, res, next) {
   if (req.session.userId) {
-    return res.redirect('/dashboard');
+    return res.redirect(getPostLoginRedirect(req.session.user || {}));
   }
 
-  if (req.headers.cookie) {
-    const cookies = req.headers.cookie.split(';').map(c => c.trim());
-    let rememberToken = null;
-    for (const cookie of cookies) {
-      if (cookie.startsWith('remember_token=')) {
-        rememberToken = cookie.substring('remember_token='.length);
-        break;
-      }
-    }
-
-    if (rememberToken) {
-      try {
-        const verifyResult = await postJson(`${flaskBackendBaseUrl}/api/v1/verify_token`, { token: rememberToken });
-        if (verifyResult.statusCode === 200 && verifyResult.body && verifyResult.body.success) {
-          const user = verifyResult.body.user;
-          req.session.userId = user.id;
-          req.session.user = user;
-          return res.redirect('/dashboard');
-        }
-      } catch (error) {
-        // Token verification failed, proceed to unauthenticated route
-      }
-    }
+  if (await tryRestoreSessionFromRememberToken(req)) {
+    return res.redirect(getPostLoginRedirect(req.session.user || {}));
   }
+
   next();
 }
 
@@ -546,16 +592,19 @@ function getMailTransport() {
 }
 
 // GET /login/student
-app.get('/login/student', (req, res) => {
+app.get('/login/student', async (req, res) => {
   if (req.session.userId) {
     if (req.session.user && req.session.user.isTeacher === false) {
-      // If studentId is missing, don't redirect to /student (which would redirect back here)
-      // Instead, just show the login page or try to fix the session
       if (req.session.studentId) return res.redirect('/student');
     } else {
       return res.redirect('/dashboard');
     }
   }
+
+  if (await tryRestoreSessionFromRememberToken(req) && req.session.studentId) {
+    return res.redirect('/student');
+  }
+
   res.sendFile(path.join(uiDir, 'student-login.html'));
 });
 
@@ -613,11 +662,16 @@ app.post('/login/student/set-password', async (req, res) => {
     const student = result.body.student;
     req.session.userId = student.user_id;
     req.session.studentId = student.id;
+    req.session.sessionToken = generateSessionToken();
     req.session.user = {
-      id: student.user_id, studentId: student.id, email: student.email,
+      id: student.user_id,
+      studentId: student.id,
+      email: student.email,
       fullName: `${student.first_name} ${student.surname}`,
-      firstName: student.first_name, lastName: student.surname,
-      isTeacher: false, isStudent: true,
+      firstName: student.first_name,
+      lastName: student.surname,
+      isTeacher: false,
+      isStudent: true,
     };
     res.json({ success: true });
   } catch (e) {
@@ -626,7 +680,7 @@ app.post('/login/student/set-password', async (req, res) => {
 });
 
 // GET /login/student/email — Student email+password login page (already-activated accounts)
-app.get('/login/student/email', (req, res) => {
+app.get('/login/student/email', async (req, res) => {
   if (req.session.userId) {
     if (req.session.user && req.session.user.isTeacher === false) {
       if (req.session.studentId) return res.redirect('/student');
@@ -634,6 +688,11 @@ app.get('/login/student/email', (req, res) => {
       return res.redirect('/dashboard');
     }
   }
+
+  if (await tryRestoreSessionFromRememberToken(req) && req.session.studentId) {
+    return res.redirect('/student');
+  }
+
   res.sendFile(path.join(uiDir, 'student-email-login.html'));
 });
 
@@ -659,17 +718,18 @@ app.post('/login/student/email', async (req, res) => {
     }
 
     const student = result.body.student;
-    req.session.userId    = student.user_id;
+    req.session.userId = student.user_id;
     req.session.studentId = student.id;
+    req.session.sessionToken = generateSessionToken();
     req.session.user = {
-      id:         student.user_id,
-      studentId:  student.id,
-      email:      student.email,
-      fullName:   `${student.first_name} ${student.surname}`,
-      firstName:  student.first_name,
-      lastName:   student.surname,
-      isTeacher:  false,
-      isStudent:  true,
+      id: student.user_id,
+      studentId: student.id,
+      email: student.email,
+      fullName: `${student.first_name} ${student.surname}`,
+      firstName: student.first_name,
+      lastName: student.surname,
+      isTeacher: false,
+      isStudent: true,
     };
 
     return res.json({ success: true });
@@ -681,16 +741,7 @@ app.post('/login/student/email', async (req, res) => {
 
 
 const handleLogout = async (req, res) => {
-  let rememberToken = null;
-  if (req.headers.cookie) {
-    const cookies = req.headers.cookie.split(';').map(c => c.trim());
-    for (const cookie of cookies) {
-      if (cookie.startsWith('remember_token=')) {
-        rememberToken = cookie.substring('remember_token='.length);
-        break;
-      }
-    }
-  }
+  const rememberToken = getRememberToken(req);
 
   if (rememberToken) {
     res.clearCookie('remember_token');
@@ -719,8 +770,13 @@ app.post(['/logout', '/auth/logout'], handleLogout);
 
 // ── STUDENT PORTAL ───────────────────────────────────────────────────────────
 
-function requireStudentAuth(req, res, next) {
+async function requireStudentAuth(req, res, next) {
   if (req.session.userId && req.session.studentId) return next();
+
+  if (await tryRestoreSessionFromRememberToken(req) && req.session.studentId) {
+    return next();
+  }
+
   res.redirect('/login/student');
 }
 
@@ -729,6 +785,11 @@ app.get('/student', requireStudentAuth, (req, res) => {
   const html = fs.readFileSync(path.join(uiDir, 'student-shell.html'), 'utf8')
     .replace('{{STUDENT_ID}}', req.session.studentId);
   res.send(html);
+});
+
+// GET /student/profile — student profile page (standalone shell)
+app.get('/student/profile', requireStudentAuth, (req, res) => {
+  res.sendFile(path.join(uiDir, 'student-profile-shell.html'));
 });
 
 // GET /api/student/me — logged-in student's own data + records
@@ -744,6 +805,69 @@ app.get('/api/student/me', requireStudentAuth, async (req, res) => {
 
 // (handleLogout consolidated above)
 
+// ============= PROFILE API ENDPOINTS =============
+
+// GET /api/profile - Get current user profile (teacher or student)
+app.get('/api/profile', requireAnyAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const result = await flaskGet('/api/profile', { 'X-User-Id': String(userId) });
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// PUT /api/profile - Update profile
+app.put('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const result = await flaskRequest('PUT', '/api/v2/profile', req.body, { 'X-User-Id': String(userId) });
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/profile/change-password - Change password (teacher or student)
+app.post('/api/profile/change-password', requireAnyAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const result = await flaskRequest('POST', '/api/profile/change-password', req.body, { 'X-User-Id': String(userId) });
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/profile/upload-pic - Upload profile picture (teacher or student)
+app.post('/api/profile/upload-pic', requireAnyAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const result = await flaskRequest('POST', '/api/profile/upload-pic', req.body, { 'X-User-Id': String(userId) });
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// DELETE /api/profile - Delete account
+app.delete('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const result = await flaskRequest('DELETE', '/api/v2/profile', {}, { 'X-User-Id': String(userId) });
+    
+    if (result.status === 200) {
+      // Clear session on successful delete
+      req.session.destroy();
+    }
+    
+    res.status(result.status).json(result.body);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 // ============= APP ROUTES =============
 
 // (/ is handled above as the landing page)
@@ -754,6 +878,14 @@ app.get(['/dashboard', '/app'], requireAuth, (req, res) => {
     return res.redirect('/student');
   }
   res.send(renderShell('dashboard'));
+});
+
+// GET /profile - User profile page
+app.get('/profile', requireAuth, (req, res) => {
+  if (req.session.user && !req.session.user.isTeacher) {
+    return res.redirect('/student/profile');
+  }
+  res.send(renderShell('profile'));
 });
 
 // GET /records - Main app shell with records view (requires auth)
@@ -784,6 +916,7 @@ app.get('/partials/:view', async (req, res) => {
       dashboard: '/dashboard',
       records:   '/records',
       students:  '/records',
+      profile:   '/profile',
     };
     const shellPath = shellRoutes[view] || '/dashboard';
     return res.redirect(shellPath);
@@ -807,21 +940,15 @@ app.get('/partials/:view', async (req, res) => {
 
   if (fileName === 'dashboard') {
     try {
-      const statsResponse = await new Promise((resolve, reject) => {
-        const httpModule = flaskBackendBaseUrl.startsWith('https') ? require('https') : require('http');
-        const request = httpModule.get(`${flaskBackendBaseUrl}/api/v1/stats`, (response) => {
-          let data = '';
-          response.on('data', chunk => data += chunk);
-          response.on('end', () => resolve(JSON.parse(data)));
-        });
-        request.on('error', reject);
-      });
+      // Request stats from Flask and include the logged-in teacher id so the backend can return teacher-specific counts
+      const statsResponse = await flaskGet(`/api/v1/stats`, { 'X-User-Id': String(req.session.user ? req.session.user.id : req.session.userId) });
 
-      if (statsResponse.success) {
-        fileContent = fileContent.replace('{{TOTAL_ENROLLED}}', statsResponse.totalEnrolled.toLocaleString());
-        fileContent = fileContent.replace('{{PROCESSED_RECORDS}}', statsResponse.processedRecords.toLocaleString());
-        fileContent = fileContent.replace('{{TOTAL_SECTIONS}}', (statsResponse.totalSections || 0).toLocaleString());
-        fileContent = fileContent.replace('{{TOTAL_TEACHERS}}', (statsResponse.totalTeachers || 0).toLocaleString());
+      if (statsResponse && statsResponse.body && statsResponse.body.success) {
+        const stats = statsResponse.body;
+        fileContent = fileContent.replace('{{TOTAL_ENROLLED}}', Number(stats.totalEnrolled || 0).toLocaleString());
+        fileContent = fileContent.replace('{{PROCESSED_RECORDS}}', Number(stats.processedRecords || 0).toLocaleString());
+        fileContent = fileContent.replace('{{TOTAL_SECTIONS}}', Number(stats.totalSections || 0).toLocaleString());
+        fileContent = fileContent.replace('{{TOTAL_TEACHERS}}', Number(stats.totalTeachers || 0).toLocaleString());
       }
     } catch (err) {
       console.error('Failed to fetch stats:', err);
@@ -840,8 +967,8 @@ app.get('/partials/:view', async (req, res) => {
 // GET /api/students - Get all students
 app.get('/api/students', requireAuth, async (req, res) => {
   try {
-    const students = await getAllStudents();
-    res.json(students);
+    const result = await flaskGet('/api/v1/students');
+    res.status(result.status).json(result.body && result.body.students ? result.body.students : []);
   } catch (error) {
     console.error('Error fetching students:', error);
     res.status(500).json({ error: 'Failed to fetch students' });
@@ -851,8 +978,8 @@ app.get('/api/students', requireAuth, async (req, res) => {
 // GET /api/records/:studId - Get records for a student
 app.get('/api/records/:studId', requireAuth, async (req, res) => {
   try {
-    const records = await getStudentRecords(req.params.studId);
-    res.json(records);
+    const result = await flaskGet(`/api/v1/records/by-stud-id/${encodeURIComponent(req.params.studId)}`);
+    res.status(result.status).json(result.body && result.body.records ? result.body.records : []);
   } catch (error) {
     console.error('Error fetching records:', error);
     res.status(500).json({ error: 'Failed to fetch records' });
@@ -866,10 +993,10 @@ const FormData = require('form-data');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-async function flaskGet(path) {
+async function flaskGet(path, headers = {}) {
   return new Promise((resolve, reject) => {
     const httpMod = flaskBackendBaseUrl.startsWith('https') ? require('https') : require('http');
-    const req = httpMod.get(`${flaskBackendBaseUrl}${path}`, (resp) => {
+    const req = httpMod.get(`${flaskBackendBaseUrl}${path}`, { headers }, (resp) => {
       let data = '';
       resp.on('data', c => data += c);
       resp.on('end', () => {
@@ -881,7 +1008,7 @@ async function flaskGet(path) {
   });
 }
 
-async function flaskRequest(method, path, body) {
+async function flaskRequest(method, path, body, headers = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(`${flaskBackendBaseUrl}${path}`);
     const httpMod = url.protocol === 'https:' ? require('https') : require('http');
@@ -891,7 +1018,7 @@ async function flaskRequest(method, path, body) {
       port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: url.pathname + url.search,
       method: method.toUpperCase(),
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr) }
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr), ...headers }
     };
     const req = httpMod.request(options, (resp) => {
       let data = '';

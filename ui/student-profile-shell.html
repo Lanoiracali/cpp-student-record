@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Profile | CPP Portal</title>
+<meta name="description" content="Student profile — CPP Institutional Records System."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #f7f9fb; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block; vertical-align: middle; line-height: 1;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fadeUp 0.45s ease both; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .animate-spin { animation: spin 1s linear infinite; }
+
+  /* Avatar hover overlay */
+  .avatar-wrap:hover .avatar-overlay { opacity: 1; }
+  .avatar-overlay {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    position: absolute; inset: 0; border-radius: 9999px;
+    background: rgba(15,23,42,0.55);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; cursor: pointer; backdrop-filter: blur(2px);
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Top navbar -->
+<header class="fixed top-0 left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-sm h-14 flex items-center px-6 gap-4">
+  <div class="flex items-center gap-2.5 flex-1">
+    <div class="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center">
+      <span class="material-symbols-outlined text-white text-base" style="font-variation-settings:'FILL' 1">school</span>
+    </div>
+    <span class="font-bold text-slate-900 text-base">CPP Portal</span>
+    <span class="hidden sm:inline text-xs text-slate-400 font-medium">/ My Profile</span>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <a href="/student"
+       class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-xl hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all group">
+      <span class="material-symbols-outlined text-base transition-transform group-hover:-translate-x-0.5">arrow_back</span>
+      <span class="hidden sm:inline">My Records</span>
+    </a>
+    <form action="/logout" method="post">
+      <button type="submit"
+              class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-600 border border-slate-200 rounded-xl hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all">
+        <span class="material-symbols-outlined text-base">logout</span>
+        <span class="hidden sm:inline">Log out</span>
+      </button>
+    </form>
+  </div>
+</header>
+
+<!-- Main content -->
+<main class="pt-14 min-h-screen">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-10" id="profile-root">
+    <!-- Loading state -->
+    <div class="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3">
+      <span class="material-symbols-outlined animate-spin text-5xl">progress_activity</span>
+      <p class="text-sm">Loading your profile…</p>
+    </div>
+  </div>
+</main>
+
+<!-- Hidden file input for avatar upload -->
+<input type="file" id="avatar-file-input" accept="image/*" class="hidden"/>
+
+<!-- Upload progress toast -->
+<div id="upload-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3.5 bg-slate-900 text-white text-sm font-semibold rounded-2xl shadow-2xl">
+  <span class="material-symbols-outlined text-[18px] animate-spin" id="toast-icon">progress_activity</span>
+  <span id="toast-msg">Uploading…</span>
+</div>
+
+<script>
+(function() {
+  const root = document.getElementById('profile-root');
+  const fileInput = document.getElementById('avatar-file-input');
+  const toast = document.getElementById('upload-toast');
+  const toastIcon = document.getElementById('toast-icon');
+  const toastMsg = document.getElementById('toast-msg');
+
+  function showToast(msg, type = 'loading') {
+    toastMsg.textContent = msg;
+    if (type === 'loading') {
+      toastIcon.textContent = 'progress_activity';
+      toastIcon.classList.add('animate-spin');
+      toast.classList.remove('bg-red-600', 'bg-emerald-600');
+      toast.classList.add('bg-slate-900');
+    } else if (type === 'success') {
+      toastIcon.textContent = 'check_circle';
+      toastIcon.classList.remove('animate-spin');
+      toast.classList.remove('bg-slate-900', 'bg-red-600');
+      toast.classList.add('bg-emerald-600');
+    } else {
+      toastIcon.textContent = 'error';
+      toastIcon.classList.remove('animate-spin');
+      toast.classList.remove('bg-slate-900', 'bg-emerald-600');
+      toast.classList.add('bg-red-600');
+    }
+    toast.classList.remove('hidden');
+  }
+
+  function hideToast() {
+    toast.classList.add('hidden');
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await fetch('/api/profile');
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login/student';
+        return;
+      }
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to load profile');
+      renderProfile(data.profile);
+    } catch (e) {
+      root.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-24 text-red-500 space-y-2">
+          <span class="material-symbols-outlined text-5xl">error</span>
+          <p class="font-semibold">Failed to load profile</p>
+          <p class="text-sm text-slate-500">${e.message}</p>
+        </div>`;
+    }
+  }
+
+  function renderProfile(p) {
+    const firstName = p.first_name || '';
+    const lastName  = p.last_name  || '';
+    const fullName  = `${firstName} ${lastName}`.trim() || 'Student';
+    const initials  = (firstName[0] || '') + (lastName[0] || '');
+    const studNum   = p.stud_id || p.stud_number || p.student_number || '—';
+    const hasPic    = !!p.profile_pic;
+
+    root.innerHTML = `
+      <div class="animate-fade-up space-y-6">
+
+        <!-- Page header -->
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Account</p>
+          <h1 class="mt-1 text-3xl font-black text-slate-900 tracking-tight">My Profile</h1>
+        </div>
+
+        <!-- Profile card -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.05)] overflow-hidden">
+
+          <!-- Gradient banner -->
+          <div class="h-28 bg-gradient-to-r from-blue-900 via-blue-800 to-teal-700 relative">
+            <div class="absolute inset-0 opacity-20"
+                 style="background-image:radial-gradient(circle at 70% 50%, rgba(255,255,255,0.4) 0%, transparent 60%);">
+            </div>
+          </div>
+
+          <!-- Avatar + info -->
+          <div class="px-8 pb-8">
+            <!-- Avatar sits half over the banner -->
+            <div class="relative -mt-16 mb-5 w-fit">
+              <div class="avatar-wrap relative w-28 h-28 rounded-full ring-4 ring-white shadow-xl cursor-pointer" id="avatar-wrap">
+                <div id="avatar-display"
+                     class="w-full h-full rounded-full bg-gradient-to-br from-blue-100 to-teal-100 flex items-center justify-center overflow-hidden text-blue-900 font-black text-4xl select-none"
+                     style="${hasPic ? `background-image:url('${p.profile_pic}');background-size:cover;background-position:center;` : ''}">
+                  ${hasPic ? '' : (initials.toUpperCase() || '<span class="material-symbols-outlined text-5xl" style="font-variation-settings:\'FILL\' 1;color:#94a3b8;">account_circle</span>')}
+                </div>
+                <div class="avatar-overlay">
+                  <span class="material-symbols-outlined text-2xl">photo_camera</span>
+                  <span class="text-[10px] font-bold uppercase tracking-widest mt-1">Change</span>
+                </div>
+              </div>
+              <!-- Camera badge -->
+              <div class="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-blue-900 border-2 border-white flex items-center justify-center shadow-md pointer-events-none">
+                <span class="material-symbols-outlined text-white" style="font-size:14px;font-variation-settings:'FILL' 1;">photo_camera</span>
+              </div>
+            </div>
+
+            <!-- Name & student number -->
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight" id="display-name">${fullName}</h2>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+              <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-900 border border-blue-100">
+                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">school</span>
+                Student
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 font-mono" id="display-stud-num">
+                <span class="material-symbols-outlined text-[14px]">badge</span>
+                ${studNum}
+              </span>
+            </div>
+
+            <hr class="my-6 border-slate-100"/>
+
+            <!-- Info grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">First Name</p>
+                <p class="text-sm font-semibold text-slate-800">${firstName || '—'}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Last Name</p>
+                <p class="text-sm font-semibold text-slate-800">${lastName || '—'}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Student Number</p>
+                <p class="text-sm font-semibold text-slate-800 font-mono">${studNum}</p>
+              </div>
+              ${p.email ? `<div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Email</p>
+                <p class="text-sm font-semibold text-slate-800 truncate">${p.email}</p>
+              </div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Change picture hint -->
+        <p class="text-center text-xs text-slate-400 flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px]">info</span>
+          Click your avatar above to upload a new profile picture.
+        </p>
+
+      </div>`;
+
+    // Wire avatar click → file picker
+    document.getElementById('avatar-wrap').onclick = () => fileInput.click();
+  }
+
+  // Handle file selection → upload
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const base64Data = evt.target.result;
+
+      // Optimistic UI: show preview immediately
+      const avatarDisplay = document.getElementById('avatar-display');
+      if (avatarDisplay) {
+        avatarDisplay.style.backgroundImage = `url('${base64Data}')`;
+        avatarDisplay.style.backgroundSize = 'cover';
+        avatarDisplay.style.backgroundPosition = 'center';
+        avatarDisplay.textContent = '';
+      }
+
+      showToast('Uploading picture…', 'loading');
+
+      try {
+        const res = await fetch('/api/profile/upload-pic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile_pic: base64Data })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Upload failed');
+
+        showToast('Profile picture updated!', 'success');
+        setTimeout(hideToast, 2500);
+      } catch (err) {
+        showToast(err.message || 'Upload failed', 'error');
+        setTimeout(hideToast, 3500);
+        // Revert optimistic update
+        loadProfile();
+      }
+    };
+    reader.readAsDataURL(file);
+    // Reset so same file can be picked again
+    fileInput.value = '';
+  };
+
+  loadProfile();
+})();
+</script>
+
+</body>
+</html>
